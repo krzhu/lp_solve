@@ -90,7 +90,7 @@ STATIC void mat_free(MATrec **matrix)
 
 STATIC MYBOOL mat_memopt(MATrec *mat, int rowextra, int colextra, int nzextra)
 {
-  MYBOOL status = TRUE;
+  MYBOOL status = FTRUE;
   int matalloc, colalloc, rowalloc;
 
   if((mat == NULL) ||
@@ -99,7 +99,7 @@ STATIC MYBOOL mat_memopt(MATrec *mat, int rowextra, int colextra, int nzextra)
 #else
      (rowextra < 0) || (colextra < 0) || (nzextra < 0))
 #endif
-    return( FALSE );
+    return( FFALSE );
 
   mat->rows_alloc    = MIN(mat->rows_alloc,    mat->rows + rowextra);
   mat->columns_alloc = MIN(mat->columns_alloc, mat->columns + colextra);
@@ -189,13 +189,13 @@ STATIC MYBOOL inc_mat_space(MATrec *mat, int mindelta)
     allocREAL(mat->lp, &(mat->row_mat_value), mat->mat_alloc, AUTOMATIC);
 #endif
   }
-  return(TRUE);
+  return(FTRUE);
 }
 
 STATIC MYBOOL inc_matrow_space(MATrec *mat, int deltarows)
 {
   int    rowsum, oldrowsalloc;
-  MYBOOL status = TRUE;
+  MYBOOL status = FTRUE;
 
   /* Adjust lp row structures */
   if(mat->rows+deltarows >= mat->rows_alloc) {
@@ -209,7 +209,7 @@ STATIC MYBOOL inc_matrow_space(MATrec *mat, int deltarows)
 
     /* Update row pointers */
     status = allocINT(mat->lp, &mat->row_end, rowsum, AUTOMATIC);
-    mat->row_end_valid = FALSE;
+    mat->row_end_valid = FFALSE;
   }
   return( status );
 }
@@ -217,7 +217,7 @@ STATIC MYBOOL inc_matrow_space(MATrec *mat, int deltarows)
 STATIC MYBOOL inc_matcol_space(MATrec *mat, int deltacols)
 {
   int    i, colsum, oldcolsalloc;
-  MYBOOL status = TRUE;
+  MYBOOL status = FTRUE;
 
   /* Adjust lp column structures */
   if(mat->columns+deltacols >= mat->columns_alloc) {
@@ -235,7 +235,7 @@ STATIC MYBOOL inc_matcol_space(MATrec *mat, int deltacols)
       mat->col_end[0] = 0;
     for(i = MIN(oldcolsalloc, mat->columns) + 1; i < colsum; i++)
       mat->col_end[i] = mat->col_end[i-1];
-    mat->row_end_valid = FALSE;
+    mat->row_end_valid = FFALSE;
   }
   return( status );
 }
@@ -266,9 +266,9 @@ STATIC MYBOOL mat_indexrange(MATrec *mat, int index, MYBOOL isrow, int *startpos
 {
 #ifdef Paranoia
   if(isrow && ((index < 0) || (index > mat->rows)))
-    return( FALSE );
+    return( FFALSE );
   else if(!isrow && ((index < 1) || (index > mat->columns)))
-    return( FALSE );
+    return( FFALSE );
 #endif
 
   if(isrow && mat_validate(mat)) {
@@ -282,13 +282,13 @@ STATIC MYBOOL mat_indexrange(MATrec *mat, int index, MYBOOL isrow, int *startpos
     *startpos = mat->col_end[index-1];
     *endpos = mat->col_end[index];
   }
-  return( TRUE );
+  return( FTRUE );
 }
 
 STATIC int mat_shiftrows(MATrec *mat, int *bbase, int delta, LLrec *varmap)
 {
   int     j, k, i, ii, thisrow, *colend, base;
-  MYBOOL  preparecompact = FALSE;
+  MYBOOL  preparecompact = FFALSE;
   int     *rownr;
 
   if(delta == 0)
@@ -320,7 +320,7 @@ STATIC int mat_shiftrows(MATrec *mat, int *bbase, int delta, LLrec *varmap)
     if(preparecompact) {
       /* Create the offset array */
       int *newrowidx = NULL;
-      allocINT(mat->lp, &newrowidx, mat->rows+1, FALSE);
+      allocINT(mat->lp, &newrowidx, mat->rows+1, FFALSE);
       newrowidx[0] = 0;
       delta = 0;
       for(j = 1; j <= mat->rows; j++) {
@@ -420,15 +420,15 @@ STATIC int mat_mapreplace(MATrec *mat, LLrec *rowmap, LLrec *colmap, MATrec *mat
   /* Create map and sort by increasing index in "mat" */
   if(mat2 != NULL) {
     jj = mat2->col_tag[0];
-    allocINT(lp, &indirect, jj+1, FALSE);
+    allocINT(lp, &indirect, jj+1, FFALSE);
     indirect[0] = jj;
     for(i = 1; i <= jj; i++)
       indirect[i] = i;
-    hpsortex(mat2->col_tag, jj, 1, sizeof(*indirect), FALSE, compareINT, indirect);
+    hpsortex(mat2->col_tag, jj, 1, sizeof(*indirect), FFALSE, compareINT, indirect);
   }
 
   /* Do the compacting */
-  mat->row_end_valid = FALSE;
+  mat->row_end_valid = FFALSE;
   nz = mat->col_end[mat->columns];
   ie = 0;
   ii = 0;
@@ -583,7 +583,7 @@ Finish:
 /* Routines to compact rows in matrix based on precoded entries */
 STATIC int mat_zerocompact(MATrec *mat)
 {
-  return( mat_rowcompact(mat, TRUE) );
+  return( mat_rowcompact(mat, FTRUE) );
 }
 STATIC int mat_rowcompact(MATrec *mat, MYBOOL dozeros)
 {
@@ -781,7 +781,7 @@ STATIC MATrec *mat_extractmat(MATrec *mat, LLrec *rowmap, LLrec *colmap, MYBOOL 
   for(xa = 0; xa < na; xa++, rownr += matRowColStep, colnr += matRowColStep, value += matValueStep) {
     if((isActiveLink(colmap, *colnr) ^ negated) &&
        (isActiveLink(rowmap, *rownr) ^ negated))
-      mat_setvalue(newmat, *rownr, *colnr, *value, FALSE);
+      mat_setvalue(newmat, *rownr, *colnr, *value, FFALSE);
   }
 
   /* Return the populated new matrix */
@@ -798,7 +798,7 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
   /* Check if we are in row order mode and should add as row instead;
      the matrix will be transposed at a later stage */
   if(checkrowmode && mat->is_roworder)
-    return( mat_setrow(mat, colno, count, column, rowno, doscale, FALSE) );
+    return( mat_setrow(mat, colno, count, column, rowno, doscale, FFALSE) );
 
   /* Initialize and validate */
   isA = (MYBOOL) (mat == mat->lp->matA);
@@ -806,12 +806,12 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
   if(!isNZ)
     count = mat->lp->rows;
   else if((count < 0) || (count > mat->rows+((mat->is_roworder) ? 0 : 1)))
-    return( FALSE );
+    return( FFALSE );
   if(isNZ && (count > 0)) {
     if(count > 1)
-      sortREALByINT(column, rowno, count, 0, TRUE);
+      sortREALByINT(column, rowno, count, 0, FTRUE);
     if((rowno[0] < 0) || (rowno[count-1] > mat->rows))
-      return( FALSE );
+      return( FFALSE );
   }
 
   /* Capture OF definition in column mode */
@@ -855,12 +855,12 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
   }
   else {
     newnr = 0;
-    if(!allocMYBOOL(lp, &addto, mat->rows + 1, TRUE)) {
-      return( FALSE );
+    if(!allocMYBOOL(lp, &addto, mat->rows + 1, FTRUE)) {
+      return( FFALSE );
     }
     for(i = mat->rows; i >= 0; i--) {
       if(fabs(column[i]) > mat->epsvalue) {
-        addto[i] = TRUE;
+        addto[i] = FTRUE;
         firstrow = i;
         newnr++;
       }
@@ -931,14 +931,14 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
       jj++;
     }
   }
-  mat->row_end_valid = FALSE;
+  mat->row_end_valid = FFALSE;
 
   /* Finish and return */
 Done:
   if(saved != 0)
     column[0] = saved;
   FREE(addto);
-  return( TRUE );
+  return( FTRUE );
 
 }
 
@@ -948,15 +948,15 @@ STATIC MYBOOL mat_mergemat(MATrec *target, MATrec *source, MYBOOL usecolmap)
   int   i, ix, iy, n, *colmap = NULL;
   REAL  *colvalue = NULL;
 
-  if((target->rows < source->rows) || !allocREAL(lp, &colvalue, target->rows+1, FALSE))
-    return( FALSE );
+  if((target->rows < source->rows) || !allocREAL(lp, &colvalue, target->rows+1, FFALSE))
+    return( FFALSE );
 
   if(usecolmap) {
     n = source->col_tag[0];
-    allocINT(lp, &colmap, n+1, FALSE);
+    allocINT(lp, &colmap, n+1, FFALSE);
     for(i = 1; i <= n; i++)
       colmap[i] = i;
-    hpsortex(source->col_tag, n, 1, sizeof(*colmap), FALSE, compareINT, colmap);
+    hpsortex(source->col_tag, n, 1, sizeof(*colmap), FFALSE, compareINT, colmap);
   }
   else
     n = source->columns;
@@ -973,14 +973,14 @@ STATIC MYBOOL mat_mergemat(MATrec *target, MATrec *source, MYBOOL usecolmap)
     }
     else
       ix = iy = i;
-    mat_expandcolumn(source, ix, colvalue, NULL, FALSE);
-    mat_setcol(target, iy, 0, colvalue, NULL, FALSE, FALSE);
+    mat_expandcolumn(source, ix, colvalue, NULL, FFALSE);
+    mat_setcol(target, iy, 0, colvalue, NULL, FFALSE, FFALSE);
   }
 
   FREE( colvalue );
   FREE( colmap );
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 STATIC int mat_nz_unused(MATrec *mat)
@@ -1000,22 +1000,22 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Check if we are in row order mode and should add as column instead;
      the matrix will be transposed at a later stage */
   if(checkrowmode && mat->is_roworder)
-    return( mat_setcol(mat, rowno, count, row, colno, doscale, FALSE) );
+    return( mat_setcol(mat, rowno, count, row, colno, doscale, FFALSE) );
 
   /* Do initialization and validation */
   if(!mat_validate(mat))
-    return( FALSE );
+    return( FFALSE );
   isA = (MYBOOL) (mat == lp->matA);
   isNZ = (MYBOOL) (colno != NULL);
   if(!isNZ)
     count = mat->columns;
   else if((count < 0) || (count > mat->columns))
-    return( FALSE );
+    return( FFALSE );
   if(isNZ && (count > 0)) {
     if(count > 1)
-      sortREALByINT(row, (int *) colno, count, 0, TRUE);
+      sortREALByINT(row, (int *) colno, count, 0, FTRUE);
     if((colno[0] < 1) || (colno[count-1] > mat->columns))
-      return( FALSE );
+      return( FFALSE );
   }
 
   /* Capture OF definition in row mode */
@@ -1129,19 +1129,19 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
         /* Otherwise update addto-list */
         else {
           if(addto == NULL) {
-            if(!allocMYBOOL(lp, &addto, mat->columns + 1, TRUE))
-              return( FALSE );
+            if(!allocMYBOOL(lp, &addto, mat->columns + 1, FTRUE))
+              return( FFALSE );
             firstcol = k;
           }
-          addto[k] = TRUE;
+          addto[k] = FTRUE;
           newnr++;
         }
       }
     }
   }
   if(newnr == 0)
-   if (FALSE)
-    return( TRUE );
+   if (FFALSE)
+    return( FTRUE );
 
   /* Make sure we have enough matrix space */
   if((newnr > 0) && (mat_nz_unused(mat) <= newnr) && !inc_mat_space(mat, newnr)) {
@@ -1161,7 +1161,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
 
   if((orignr == 0) || (ii >= orignr))
     j = firstcol;
-  else if(isNZ||TRUE)
+  else if(isNZ||FTRUE)
     j = colnr;
   else
     j = ROW_MAT_COLNR(ii); /* first column with a value on that row */
@@ -1201,7 +1201,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   if(jj_j > 0) {
     if(!inc_mat_space(mat, jj_j)) {
       FREE(addto);
-      return( FALSE );
+      return( FFALSE );
     }
     if(orignr-jj > 0) {
       COL_MAT_MOVE(jj+jj_j, jj, orignr-jj);
@@ -1371,7 +1371,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Compact in the case that we added zeros and set flag for row index update */
   if(matz > 0)
     mat_zerocompact(mat);
-  mat->row_end_valid = FALSE;
+  mat->row_end_valid = FFALSE;
 
 Done:
   if(saved != 0)
@@ -1396,18 +1396,18 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Check if we are in row order mode and should add as column instead;
      the matrix will be transposed at a later stage */
   if(checkrowmode && mat->is_roworder)
-    return( mat_setcol(mat, rowno, count, row, colno, doscale, FALSE) );
+    return( mat_setcol(mat, rowno, count, row, colno, doscale, FFALSE) );
 
   /* Do initialization and validation */
   if(!mat_validate(mat))
-    return( FALSE );
+    return( FFALSE );
   isA = (MYBOOL) (mat == lp->matA);
   if(doscale && isA && !lp->scaling_used)
-    doscale = FALSE;
+    doscale = FFALSE;
   isNZ = (MYBOOL) (colno != NULL);
   lendense = (mat->is_roworder ? lp->rows : lp->columns);
   if((count < 0) || (count > lendense))
-    return( FALSE );
+    return( FFALSE );
   colnr1 = lendense + 1;
 
   /* Capture OF definition in row mode */
@@ -1437,14 +1437,14 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Make local working data copies */
   if(!isNZ) {
     REAL *tmprow = NULL;
-    if(!allocINT(lp, &colno, lendense+1, FALSE))
-      return( FALSE );
+    if(!allocINT(lp, &colno, lendense+1, FFALSE))
+      return( FFALSE );
     newnz = 0;
     for(i = 1; i <= lendense; i++)
       if((value = row[i]) != 0) {
-        if((tmprow == NULL) && !allocREAL(lp, &tmprow, lendense-i+1, FALSE)) {
+        if((tmprow == NULL) && !allocREAL(lp, &tmprow, lendense-i+1, FFALSE)) {
           FREE(colno);
-          return( FALSE );
+          return( FFALSE );
         }
         tmprow[newnz] = value;
         colno[newnz++] = i;
@@ -1454,17 +1454,17 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   }
   else {
     int *tmpcolno = NULL;
-    if(!allocINT(lp, &tmpcolno, lendense, FALSE))
-      return( FALSE );
+    if(!allocINT(lp, &tmpcolno, lendense, FFALSE))
+      return( FFALSE );
     newnz = count;
     MEMCOPY(tmpcolno, colno, newnz);
     colno = tmpcolno;
     if(newnz > 1)
-      sortREALByINT(row, (int *) colno, newnz, 0, TRUE);
+      sortREALByINT(row, (int *) colno, newnz, 0, FTRUE);
     if((newnz > 0) && ((colno[0] < 0) || (colno[newnz-1] > lendense))) {
       FREE(colno);
       newnz = 0;
-      return( FALSE );
+      return( FFALSE );
     }
   }
 
@@ -1609,7 +1609,7 @@ ForceDelete:
   jj_j = origidx - j;
   for(; k <= lendense; k++)
     mat->col_end[k] = jj_j;
-  mat->row_end_valid = FALSE;
+  mat->row_end_valid = FFALSE;
 
 Done:
   if(!isNZ)
@@ -1630,14 +1630,14 @@ STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mul
   /* Check if we are in row order mode and should add as column instead;
      the matrix will be transposed at a later stage */
   if(checkrowmode && mat->is_roworder)
-    return( mat_appendcol(mat, count, row, colno, mult, FALSE) );
+    return( mat_appendcol(mat, count, row, colno, mult, FFALSE) );
 
   /* Do initialization and validation */
   isA = (MYBOOL) (mat == lp->matA);
   isNZ = (MYBOOL) (colno != NULL);
   if(isNZ && (count > 0)) {
     if(count > 1)
-      sortREALByINT(row, colno, count, 0, TRUE);
+      sortREALByINT(row, colno, count, 0, FTRUE);
     if((colno[0] < 1) || (colno[count-1] > mat->columns))
       return( 0 );
   }
@@ -1685,12 +1685,12 @@ STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mul
   else {
     newnr = 0;
     if(row != NULL) {
-      if(!allocMYBOOL(lp, &addto, mat->columns + 1, TRUE)) {
+      if(!allocMYBOOL(lp, &addto, mat->columns + 1, FTRUE)) {
         return( newnr );
       }
       for(i = mat->columns; i >= 1; i--) {
         if(fabs(row[i]) > mat->epsvalue) {
-          addto[i] = TRUE;
+          addto[i] = FTRUE;
           firstcol = i;
           newnr++;
         }
@@ -1765,7 +1765,7 @@ STATIC int mat_appendcol(MATrec *mat, int count, REAL *column, int *rowno, REAL 
   /* Check if we are in row order mode and should add as row instead;
      the matrix will be transposed at a later stage */
   if(checkrowmode && mat->is_roworder)
-    return( mat_appendrow(mat, count, column, rowno, mult, FALSE) );
+    return( mat_appendrow(mat, count, column, rowno, mult, FFALSE) );
 
   /* Make sure we have enough space */
 /*
@@ -1793,7 +1793,7 @@ STATIC int mat_appendcol(MATrec *mat, int count, REAL *column, int *rowno, REAL 
   isNZ = (MYBOOL) (column == NULL || rowno != NULL);
   if(isNZ && (count > 0)) {
     if(count > 1)
-      sortREALByINT(column, rowno, count, 0, TRUE);
+      sortREALByINT(column, rowno, count, 0, FTRUE);
     if((rowno[0] < 0))
       return( 0 );
   }
@@ -1856,9 +1856,9 @@ STATIC int mat_checkcounts(MATrec *mat, int *rownum, int *colnum, MYBOOL freeone
   int *rownr;
 
   if(rownum == NULL)
-    allocINT(mat->lp, &rownum, mat->rows + 1, TRUE);
+    allocINT(mat->lp, &rownum, mat->rows + 1, FTRUE);
   if(colnum == NULL)
-    allocINT(mat->lp, &colnum, mat->columns + 1, TRUE);
+    allocINT(mat->lp, &colnum, mat->columns + 1, FTRUE);
 
   for(i = 1 ; i <= mat->columns; i++) {
     j = mat->col_end[i - 1];
@@ -1906,7 +1906,7 @@ STATIC MYBOOL mat_validate(MATrec *mat)
   if(!mat->row_end_valid) {
 
     MEMCLEAR(mat->row_end, mat->rows + 1);
-    allocINT(mat->lp, &rownum, mat->rows + 1, TRUE);
+    allocINT(mat->lp, &rownum, mat->rows + 1, FTRUE);
 
     /* First tally row counts and then cumulate them */
     j = mat_nonzeros(mat);
@@ -1929,7 +1929,7 @@ STATIC MYBOOL mat_validate(MATrec *mat)
           report(mat->lp, SEVERE, "mat_validate: Matrix value storage error row %d [0..%d], column %d [1..%d]\n",
                                   *rownr, mat->rows, *colnr, mat->columns);
           mat->lp->spx_status = UNKNOWNERROR;
-          return(FALSE);
+          return(FFALSE);
         }
 #endif
         *colnr = i;
@@ -1944,12 +1944,12 @@ STATIC MYBOOL mat_validate(MATrec *mat)
     }
 
     FREE(rownum);
-    mat->row_end_valid = TRUE;
+    mat->row_end_valid = FTRUE;
   }
 
   if(mat == mat->lp->matA)
-    mat->lp->model_is_valid = TRUE;
-  return( TRUE );
+    mat->lp->model_is_valid = FTRUE;
+  return( FTRUE );
 }
 
 MYBOOL mat_get_data(lprec *lp, int matindex, MYBOOL isrow, int **rownr, int **colnr, REAL **value)
@@ -1986,7 +1986,7 @@ MYBOOL mat_get_data(lprec *lp, int matindex, MYBOOL isrow, int **rownr, int **co
 
 #endif
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 
@@ -2007,7 +2007,7 @@ MYBOOL mat_set_rowmap(MATrec *mat, int row_mat_index, int rownr, int colnr, int 
 
 #endif
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 /* Implement combined binary/linear sub-search for matrix look-up */
@@ -2193,18 +2193,18 @@ STATIC MYBOOL mat_additem(MATrec *mat, int row, int column, REAL delta)
     elmnr = mat_findelm(mat, row, column);
     if(elmnr >= 0) {
       COL_MAT_VALUE(elmnr) += delta;
-      return( TRUE );
+      return( FTRUE );
     }
     else {
       mat_setitem(mat, row, column, delta);
-      return( FALSE );
+      return( FFALSE );
     }
   }
 }
 
 STATIC MYBOOL mat_setitem(MATrec *mat, int row, int column, REAL value)
 {
-  return( mat_setvalue(mat, row, column, value, FALSE) );
+  return( mat_setvalue(mat, row, column, value, FFALSE) );
 }
 
 STATIC void mat_multrow(MATrec *mat, int row_nr, REAL mult)
@@ -2329,9 +2329,9 @@ STATIC MYBOOL mat_setvalue(MATrec *mat, int Row, int Column, REAL Value, MYBOOL 
   }
 
   /* Find out if we already have such an entry, or return insertion point */
-  i = mat_findins(mat, Row, Column, &elmnr, FALSE);
+  i = mat_findins(mat, Row, Column, &elmnr, FFALSE);
   if(i == -1)
-    return(FALSE);
+    return(FFALSE);
 
   if(isA)
     set_action(&mat->lp->spx_action, ACTION_REBASE | ACTION_RECOMPUTE | ACTION_REINVERT);
@@ -2363,14 +2363,14 @@ STATIC MYBOOL mat_setvalue(MATrec *mat, int Row, int Column, REAL Value, MYBOOL 
       for(i = Column; i <= mat->columns; i++)
         mat->col_end[i]--;
 
-      mat->row_end_valid = FALSE;
+      mat->row_end_valid = FFALSE;
     }
   }
   else if(fabs(Value) > mat->epsvalue) {
     /* no existing entry. make new one only if not nearly zero */
     /* check if more space is needed for matrix */
     if(!inc_mat_space(mat, 1))
-      return(FALSE);
+      return(FFALSE);
 
     if(Column > mat->columns) {
       i = mat->columns + 1;
@@ -2403,12 +2403,12 @@ STATIC MYBOOL mat_setvalue(MATrec *mat, int Row, int Column, REAL Value, MYBOOL 
     for(i = Column; i <= mat->columns; i++)
       mat->col_end[i]++;
 
-    mat->row_end_valid = FALSE;
+    mat->row_end_valid = FFALSE;
   }
 
   if(isA && (mat->lp->var_is_free != NULL) && (mat->lp->var_is_free[ColumnA] > 0))
     return( mat_setvalue(mat, RowA, mat->lp->var_is_free[ColumnA], -Value, doscale) );
-  return(TRUE);
+  return(FTRUE);
 }
 
 STATIC MYBOOL mat_appendvalue(MATrec *mat, int Row, REAL Value)
@@ -2425,13 +2425,13 @@ STATIC MYBOOL mat_appendvalue(MATrec *mat, int Row, REAL Value)
 
   /* Check if more space is needed for matrix */
   if(!inc_mat_space(mat, 1))
-    return(FALSE);
+    return(FFALSE);
 
 #ifdef Paranoia
   /* Check valid indeces */
   if((Row < 0) || (Row > mat->rows)) {
     report(mat->lp, SEVERE, "mat_appendvalue: Invalid row index %d specified\n", Row);
-    return(FALSE);
+    return(FFALSE);
   }
 #endif
 
@@ -2441,14 +2441,14 @@ STATIC MYBOOL mat_appendvalue(MATrec *mat, int Row, REAL Value)
 
   /* Update column count */
   (*elmnr)++;
-  mat->row_end_valid = FALSE;
+  mat->row_end_valid = FFALSE;
 
-  return(TRUE);
+  return(FTRUE);
 }
 
 STATIC MYBOOL mat_equalRows(MATrec *mat, int baserow, int comprow)
 {
-  MYBOOL status = FALSE;
+  MYBOOL status = FFALSE;
 
   if(mat_validate(mat)) {
     int bj1 = 0, ej1, bj2 = 0, ej2;
@@ -2469,7 +2469,7 @@ STATIC MYBOOL mat_equalRows(MATrec *mat, int baserow, int comprow)
       if(COL_MAT_COLNR(bj1) != COL_MAT_COLNR(bj2))
         break;
 #if 1
-      if(fabs(get_mat_byindex(mat->lp, bj1, TRUE, FALSE)-get_mat_byindex(mat->lp, bj2, TRUE, FALSE)) > mat->lp->epsprimal)
+      if(fabs(get_mat_byindex(mat->lp, bj1, FTRUE, FFALSE)-get_mat_byindex(mat->lp, bj2, FTRUE, FFALSE)) > mat->lp->epsprimal)
 #else
       if(fabs(COL_MAT_VALUE(bj1)-COL_MAT_VALUE(bj2)) > mat->lp->epsprimal)
 #endif
@@ -2537,7 +2537,7 @@ STATIC MYBOOL mat_computemax(MATrec *mat)
   /* Prepare arrays */
   if(!allocREAL(mat->lp, &mat->colmax, mat->columns_alloc+1, AUTOMATIC) ||
      !allocREAL(mat->lp, &mat->rowmax, mat->rows_alloc+1, AUTOMATIC))
-     return( FALSE );
+     return( FFALSE );
   MEMCLEAR(mat->colmax, mat->columns+1);
   MEMCLEAR(mat->rowmax, mat->rows+1);
 
@@ -2567,7 +2567,7 @@ STATIC MYBOOL mat_computemax(MATrec *mat)
       report(mat->lp, IMPORTANT, "%d matrix coefficients below machine precision were found.\n", ez);
   }
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 STATIC MYBOOL mat_transpose(MATrec *mat)
@@ -2600,8 +2600,8 @@ STATIC MYBOOL mat_transpose(MATrec *mat)
 #else /*if MatrixColAccess==CAM_Vector*/
       REAL *newValue = NULL;
       int  *newRownr = NULL;
-      allocREAL(mat->lp, &newValue, mat->mat_alloc, FALSE);
-      allocINT(mat->lp, &newRownr, mat->mat_alloc, FALSE);
+      allocREAL(mat->lp, &newValue, mat->mat_alloc, FFALSE);
+      allocINT(mat->lp, &newRownr, mat->mat_alloc, FFALSE);
 
       j = mat->row_end[0];
       for(i = nz-1; i >= j ; i--) {
@@ -2640,7 +2640,7 @@ STATIC MYBOOL mat_transpose(MATrec *mat)
 
     /* Finally set current storage mode */
     mat->is_roworder = (MYBOOL) !mat->is_roworder;
-    mat->row_end_valid = FALSE;
+    mat->row_end_valid = FFALSE;
   }
   return(status);
 }
@@ -2731,11 +2731,11 @@ STATIC int decrementUndoLadder(DeltaVrec *DV)
 STATIC MYBOOL freeUndoLadder(DeltaVrec **DV)
 {
   if((DV == NULL) || (*DV == NULL))
-    return(FALSE);
+    return(FFALSE);
 
   mat_free(&((*DV)->tracker));
   FREE(*DV);
-  return(TRUE);
+  return(FTRUE);
 }
 
 STATIC MYBOOL appendUndoPresolve(lprec *lp, MYBOOL isprimal, REAL beta, int colnrDep)
@@ -2759,19 +2759,19 @@ STATIC MYBOOL appendUndoPresolve(lprec *lp, MYBOOL isprimal, REAL beta, int coln
 
     /* Do normal user variable case */
     if(colnrDep <= lp->columns)
-      mat_setvalue(mat, colnrDep, ix, beta, FALSE);
+      mat_setvalue(mat, colnrDep, ix, beta, FFALSE);
 
     /* Handle case where a slack variable is referenced */
     else {
       int ipos, jx = mat->col_tag[ix];
-      mat_setvalue(mat, jx, ix, beta, FALSE);
-      jx = mat_findins(mat, jx, ix, &ipos, FALSE);
+      mat_setvalue(mat, jx, ix, beta, FFALSE);
+      jx = mat_findins(mat, jx, ix, &ipos, FFALSE);
       COL_MAT_ROWNR(ipos) = colnrDep;
     }
-    return( TRUE );
+    return( FTRUE );
   }
   else
-    return( FALSE );
+    return( FFALSE );
 }
 STATIC MYBOOL addUndoPresolve(lprec *lp, MYBOOL isprimal, int colnrElim, REAL alpha, REAL beta, int colnrDep)
 {
@@ -2787,7 +2787,7 @@ STATIC MYBOOL addUndoPresolve(lprec *lp, MYBOOL isprimal, int colnrElim, REAL al
       *DV = createUndoLadder(lp, lp->columns+1, lp->columns);
       mat = (*DV)->tracker;
       mat->epsvalue = lp->matA->epsvalue;
-      allocINT(lp, &(mat->col_tag), lp->columns+1, FALSE);
+      allocINT(lp, &(mat->col_tag), lp->columns+1, FFALSE);
       mat->col_tag[0] = 0;
     }
   }
@@ -2797,7 +2797,7 @@ STATIC MYBOOL addUndoPresolve(lprec *lp, MYBOOL isprimal, int colnrElim, REAL al
       *DV = createUndoLadder(lp, lp->rows+1, lp->rows);
       mat = (*DV)->tracker;
       mat->epsvalue = lp->matA->epsvalue;
-      allocINT(lp, &(mat->col_tag), lp->rows+1, FALSE);
+      allocINT(lp, &(mat->col_tag), lp->rows+1, FFALSE);
       mat->col_tag[0] = 0;
     }
   }
@@ -2810,16 +2810,16 @@ STATIC MYBOOL addUndoPresolve(lprec *lp, MYBOOL isprimal, int colnrElim, REAL al
   ix = mat->col_tag[0] = incrementUndoLadder(*DV);
   mat->col_tag[ix] = colnrElim;
   if(alpha != 0)
-    mat_setvalue(mat, 0, ix, alpha, FALSE);
+    mat_setvalue(mat, 0, ix, alpha, FFALSE);
 /*    mat_appendvalue(*mat, 0, alpha);*/
   if((colnrDep > 0) && (beta != 0)) {
     if(colnrDep > lp->columns)
       return( appendUndoPresolve(lp, isprimal, beta, colnrDep) );
     else
-      mat_setvalue(mat, colnrDep, ix, beta, FALSE);
+      mat_setvalue(mat, colnrDep, ix, beta, FFALSE);
   }
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 
@@ -2837,7 +2837,7 @@ STATIC MYBOOL addUndoPresolve(lprec *lp, MYBOOL isprimal, int colnrElim, REAL al
    basis and its factorization in lp_solve I (KE) will briefly explain
    the conventions and associated matrix algebra.  Note that with lp_solve
    version 5.5, it is also possible to direct lp_solve to use the traditional
-   (textbook) format by setting the obj_in_B parameter to FALSE.
+   (textbook) format by setting the obj_in_B parameter to FFALSE.
 
    The matrix description of a linear program (as represented by lp_solve) goes
    like this:
@@ -2957,7 +2957,7 @@ STATIC MYBOOL __WINAPI invert(lprec *lp, MYBOOL shiftbounds, MYBOOL final)
  /* Make sure the tags are correct */
   if(!mat_validate(lp->matA)) {
     lp->spx_status = INFEASIBLE;
-    return(FALSE);
+    return(FFALSE);
   }
 
  /* Create the inverse management object at the first call to invert() */
@@ -2970,7 +2970,7 @@ STATIC MYBOOL __WINAPI invert(lprec *lp, MYBOOL shiftbounds, MYBOOL final)
  /* Must save spx_status since it is used to carry information about
     the presence and handling of singular columns in the matrix */
   if(userabort(lp, MSG_INVERT))
-    return(FALSE);
+    return(FFALSE);
 
 #ifdef Paranoia
   if(lp->spx_trace)
@@ -2980,17 +2980,17 @@ STATIC MYBOOL __WINAPI invert(lprec *lp, MYBOOL shiftbounds, MYBOOL final)
 
  /* Store state of pre-existing basis, and at the same time check if
     the basis is I; in this case take the easy way out */
-  if(!allocMYBOOL(lp, &usedpos, lp->sum + 1, TRUE)) {
-    lp->bb_break = TRUE;
-    return(FALSE);
+  if(!allocMYBOOL(lp, &usedpos, lp->sum + 1, FTRUE)) {
+    lp->bb_break = FTRUE;
+    return(FFALSE);
   }
-  usedpos[0] = TRUE;
+  usedpos[0] = FTRUE;
   usercolB = 0;
   for(i = 1; i <= lp->rows; i++) {
     k = lp->var_basic[i];
     if(k > lp->rows)
       usercolB++;
-    usedpos[k] = TRUE;
+    usedpos[k] = FTRUE;
   }
 #ifdef Paranoia
   if(!verify_basis(lp))
@@ -3008,9 +3008,9 @@ STATIC MYBOOL __WINAPI invert(lprec *lp, MYBOOL shiftbounds, MYBOOL final)
     if(resetbasis) {
       j = lp->var_basic[i];
       if(j > lp->rows)
-        lp->is_basic[j] = FALSE;
+        lp->is_basic[j] = FFALSE;
       lp->var_basic[i] = i;
-      lp->is_basic[i] = TRUE;
+      lp->is_basic[i] = FTRUE;
     }
   }
 
@@ -3036,9 +3036,9 @@ STATIC MYBOOL __WINAPI invert(lprec *lp, MYBOOL shiftbounds, MYBOOL final)
 
 Cleanup:
   /* Check for numerical instability indicated by frequent refactorizations */
-  test = get_refactfrequency(lp, FALSE);
+  test = get_refactfrequency(lp, FFALSE);
   if(test < MIN_REFACTFREQUENCY) {
-    test = get_refactfrequency(lp, TRUE);
+    test = get_refactfrequency(lp, FTRUE);
     report(lp, NORMAL, "invert: Refactorization frequency %.1g indicates numeric instability.\n",
                        test);
     lp->spx_status = NUMFAILURE;
@@ -3053,11 +3053,11 @@ STATIC MYBOOL fimprove(lprec *lp, REAL *pcol, int *nzidx, REAL roundzero)
 {
   REAL   *errors, sdp;
   int    j;
-  MYBOOL Ok = TRUE;
+  MYBOOL Ok = FTRUE;
 
-  allocREAL(lp, &errors, lp->rows + 1, FALSE);
+  allocREAL(lp, &errors, lp->rows + 1, FFALSE);
   if(errors == NULL) {
-    Ok = FALSE;
+    Ok = FFALSE;
     return(Ok);
   }
   MEMCOPY(errors, pcol, lp->rows + 1);
@@ -3085,11 +3085,11 @@ STATIC MYBOOL bimprove(lprec *lp, REAL *rhsvector, int *nzidx, REAL roundzero)
 {
   int    j;
   REAL   *errors, err, maxerr;
-  MYBOOL Ok = TRUE;
+  MYBOOL Ok = FTRUE;
 
-  allocREAL(lp, &errors, lp->sum + 1, FALSE);
+  allocREAL(lp, &errors, lp->sum + 1, FFALSE);
   if(errors == NULL) {
-    Ok = FALSE;
+    Ok = FFALSE;
     return(Ok);
   }
   MEMCOPY(errors, rhsvector, lp->sum + 1);
@@ -3153,7 +3153,7 @@ STATIC void btran(lprec *lp, REAL *rhsvector, int *nzidx, REAL roundzero)
 STATIC MYBOOL fsolve(lprec *lp, int varin, REAL *pcol, int *nzidx, REAL roundzero, REAL ofscalar, MYBOOL prepareupdate)
 /* Was setpivcol in versions earlier than 4.0.1.8 - KE */
 {
-  MYBOOL ok = TRUE;
+  MYBOOL ok = FTRUE;
 
   if(varin > 0)
     obtain_column(lp, varin, pcol, nzidx, NULL);
@@ -3172,7 +3172,7 @@ STATIC MYBOOL fsolve(lprec *lp, int varin, REAL *pcol, int *nzidx, REAL roundzer
 
 STATIC MYBOOL bsolve(lprec *lp, int row_nr, REAL *rhsvector, int *nzidx, REAL roundzero, REAL ofscalar)
 {
-  MYBOOL ok = TRUE;
+  MYBOOL ok = FTRUE;
 
   if(row_nr >= 0) /* Note that row_nr == 0 returns the [1, 0...0 ] vector */
     row_nr = obtain_column(lp, row_nr, rhsvector, nzidx, NULL);
@@ -3193,7 +3193,7 @@ STATIC MYBOOL vec_compress(REAL *densevector, int startpos, int endpos, REAL eps
   int n;
 
   if((densevector == NULL) || (nzindex == NULL) || (startpos > endpos))
-    return( FALSE );
+    return( FFALSE );
 
   n = 0;
   densevector += startpos;
@@ -3208,7 +3208,7 @@ STATIC MYBOOL vec_compress(REAL *densevector, int startpos, int endpos, REAL eps
     densevector++;
   }
   nzindex[0] = n;
-  return( TRUE );
+  return( FTRUE );
 }
 
 STATIC MYBOOL vec_expand(REAL *nzvector, int *nzindex, REAL *densevector, int startpos, int endpos)
@@ -3229,7 +3229,7 @@ STATIC MYBOOL vec_expand(REAL *nzvector, int *nzindex, REAL *densevector, int st
     endpos--;
     densevector--;
   }
-  return( TRUE );
+  return( FTRUE );
 }
 
 
@@ -3265,15 +3265,15 @@ STATIC MYBOOL get_colIndexA(lprec *lp, int varset, int *colindex, MYBOOL append)
 
   /* Adjust for partial pricing */
   if(varset & SCAN_PARTIALBLOCK) {
-    SETMAX(vb, partial_blockStart(lp, FALSE));
-    SETMIN(ve, partial_blockEnd(lp, FALSE));
+    SETMAX(vb, partial_blockStart(lp, FFALSE));
+    SETMIN(ve, partial_blockEnd(lp, FFALSE));
   }
 
   /* Determine exclusion columns */
   omitfixed = (MYBOOL) ((varset & OMIT_FIXED) != 0);
   omitnonfixed = (MYBOOL) ((varset & OMIT_NONFIXED) != 0);
   if(omitfixed && omitnonfixed)
-    return(FALSE);
+    return(FFALSE);
 
   /* Scan the target colums */
   if(append)
@@ -3314,7 +3314,7 @@ STATIC MYBOOL get_colIndexA(lprec *lp, int varset, int *colindex, MYBOOL append)
   }
   colindex[0] = n;
 
-  return(TRUE);
+  return(FTRUE);
 }
 
 STATIC int prod_Ax(lprec *lp, int *coltarget, REAL *input, int *nzinput,
@@ -3323,7 +3323,7 @@ STATIC int prod_Ax(lprec *lp, int *coltarget, REAL *input, int *nzinput,
 /* prod_Ax is only used in fimprove; note that it is NOT VALIDATED/verified as of 20030801 - KE */
 {
   int      j, colnr, ib, ie, vb, ve;
-  MYBOOL   localset, localnz = FALSE, isRC;
+  MYBOOL   localset, localnz = FFALSE, isRC;
   MATrec   *mat = lp->matA;
   REAL     sdp;
   REAL     *value;
@@ -3339,9 +3339,9 @@ STATIC int prod_Ax(lprec *lp, int *coltarget, REAL *input, int *nzinput,
     if(isRC && is_piv_mode(lp, PRICE_PARTIAL) && !is_piv_mode(lp, PRICE_FORCEFULL))
       varset |= SCAN_PARTIALBLOCK;
     coltarget = (int *) mempool_obtainVector(lp->workarrays, lp->sum+1, sizeof(*coltarget));
-    if(!get_colIndexA(lp, varset, coltarget, FALSE)) {
-      mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
-      return(FALSE);
+    if(!get_colIndexA(lp, varset, coltarget, FFALSE)) {
+      mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
+      return(FFALSE);
     }
   }
   localnz = (MYBOOL) (nzinput == NULL);
@@ -3377,11 +3377,11 @@ STATIC int prod_Ax(lprec *lp, int *coltarget, REAL *input, int *nzinput,
 
   /* Clean up and return */
   if(localset)
-    mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
+    mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
   if(localnz)
-    mempool_releaseVector(lp->workarrays, (char *) nzinput, FALSE);
+    mempool_releaseVector(lp->workarrays, (char *) nzinput, FFALSE);
 
-  return(TRUE);
+  return(FTRUE);
 }
 
 STATIC int prod_xA(lprec *lp, int *coltarget,
@@ -3392,7 +3392,7 @@ STATIC int prod_xA(lprec *lp, int *coltarget,
    the same vector as input, without overwriting the [0..rows] elements. */
 {
   int      colnr, rownr, varnr, ib, ie, vb, ve, nrows = lp->rows;
-  MYBOOL   localset, localnz = FALSE, includeOF, isRC;
+  MYBOOL   localset, localnz = FFALSE, includeOF, isRC;
   REALXP   vmax;
   register REALXP v;
   int      inz, *rowin, countNZ = 0;
@@ -3418,9 +3418,9 @@ STATIC int prod_xA(lprec *lp, int *coltarget,
     if(isRC && is_piv_mode(lp, PRICE_PARTIAL) && !is_piv_mode(lp, PRICE_FORCEFULL))
       varset |= SCAN_PARTIALBLOCK;
     coltarget = (int *) mempool_obtainVector(lp->workarrays, lp->sum+1, sizeof(*coltarget));
-    if(!get_colIndexA(lp, varset, coltarget, FALSE)) {
-      mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
-      return(FALSE);
+    if(!get_colIndexA(lp, varset, coltarget, FFALSE)) {
+      mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
+      return(FFALSE);
     }
   }
 /*#define UseLocalNZ*/
@@ -3589,9 +3589,9 @@ STATIC int prod_xA(lprec *lp, int *coltarget,
 
   /* Clean up and return */
   if(localset)
-    mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
+    mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
   if(localnz)
-    mempool_releaseVector(lp->workarrays, (char *) nzinput, FALSE);
+    mempool_releaseVector(lp->workarrays, (char *) nzinput, FFALSE);
 
   if(nzoutput != NULL)
     *nzoutput = countNZ;
@@ -3621,9 +3621,9 @@ STATIC MYBOOL prod_xA2(lprec *lp, int *coltarget,
                  /*SCAN_PARTIALBLOCK+*/
                  USE_NONBASICVARS+OMIT_FIXED;
     coltarget = (int *) mempool_obtainVector(lp->workarrays, lp->sum+1, sizeof(*coltarget));
-    if(!get_colIndexA(lp, varset, coltarget, FALSE)) {
-      mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
-      return(FALSE);
+    if(!get_colIndexA(lp, varset, coltarget, FFALSE)) {
+      mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
+      return(FFALSE);
     }
   }
 
@@ -3768,8 +3768,8 @@ STATIC MYBOOL prod_xA2(lprec *lp, int *coltarget,
 
   /* Clean up and return */
   if(localset)
-    mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
-  return( TRUE );
+    mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
+  return( FTRUE );
 }
 
 STATIC void bsolve_xA2(lprec *lp, int* coltarget,

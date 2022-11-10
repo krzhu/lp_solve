@@ -24,11 +24,11 @@ MYBOOL ctf_read_A(char *filename, int maxm, int maxn, int maxnz,
   iofile = fopen(filename, "r" );
   if(iofile == NULL) {
     printf("A file %s does not exist\n", filename);
-    return( FALSE );
+    return( FFALSE );
   }
 
   filldata = (MYBOOL) !((iA == NULL) && (jA == NULL) && (Aij == NULL));
-  eof = TRUE;
+  eof = FTRUE;
   for (k = 1; k <= maxnz; k++) {
     eof = feof(iofile);
     if(eof)
@@ -50,16 +50,16 @@ MYBOOL ctf_read_A(char *filename, int maxm, int maxn, int maxnz,
   if(!eof) {
     printf("Too much data in A file.  Increase maxnz\n");
     printf("Current maxnz = %d\n", maxnz);
-    return( FALSE );
+    return( FFALSE );
   }
   printf("A  read successfully\n");
   printf("m      = %d   n      = %d   nnzero = %d\n",
           *m, *n, *nnzero);
   if (*m > maxm  ||  *n > maxn) {
     printf("However, matrix dimensions exceed maxm or maxn\n");
-    return( FALSE );
+    return( FFALSE );
   }
-  return( TRUE );
+  return( FTRUE );
 }
 
 MYBOOL ctf_size_A(char *filename, int *m, int *n, int *nnzero)
@@ -80,7 +80,7 @@ MYBOOL ctf_read_b(char *filename, int m, REAL *b)
   iofile = fopen(filename, "r");
   if(iofile == NULL) {
     printf("b file %s does not exist\n", filename);
-    return( FALSE );
+    return( FFALSE );
   }
 
   for (i = 1; i <= m; i++) {
@@ -94,12 +94,12 @@ MYBOOL ctf_read_b(char *filename, int m, REAL *b)
 
   fclose( iofile );
   printf("b  read successfully\n");
-  return( TRUE );
+  return( FTRUE );
 
 x350:
   fclose( iofile );
   printf("Not enough data in b file.\n");
-  return( FALSE );
+  return( FFALSE );
 }
 
 
@@ -112,7 +112,7 @@ MYBOOL mmf_read_A(char *filename, int maxM, int maxN, int maxnz,
   FILE   *f;
   int    i, k, ret_code, ival, jval;
   REAL   Aval;
-  MYBOOL status = FALSE, ispat, filldata;
+  MYBOOL status = FFALSE, ispat, filldata;
   char   buf[mmf_recsize];
 
   f = fopen(filename, "r");
@@ -225,7 +225,7 @@ MYBOOL mmf_read_A(char *filename, int maxM, int maxN, int maxnz,
     }
     *nz = k - 1;
   }
-  status = TRUE;
+  status = FTRUE;
 
   /* Finish up */
 x900:

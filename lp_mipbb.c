@@ -48,14 +48,14 @@ STATIC BBrec *create_BB(lprec *lp, BBrec *parentBB, MYBOOL dofullcopy)
   if(newBB != NULL) {
 
     if(parentBB == NULL) {
-      allocREAL(lp, &newBB->upbo,  lp->sum + 1, FALSE);
-      allocREAL(lp, &newBB->lowbo, lp->sum + 1, FALSE);
+      allocREAL(lp, &newBB->upbo,  lp->sum + 1, FFALSE);
+      allocREAL(lp, &newBB->lowbo, lp->sum + 1, FFALSE);
       MEMCOPY(newBB->upbo,  lp->orig_upbo,  lp->sum + 1);
       MEMCOPY(newBB->lowbo, lp->orig_lowbo, lp->sum + 1);
     }
     else if(dofullcopy) {
-      allocREAL(lp, &newBB->upbo,  lp->sum + 1, FALSE);
-      allocREAL(lp, &newBB->lowbo, lp->sum + 1, FALSE);
+      allocREAL(lp, &newBB->upbo,  lp->sum + 1, FFALSE);
+      allocREAL(lp, &newBB->lowbo, lp->sum + 1, FFALSE);
       MEMCOPY(newBB->upbo,  parentBB->upbo,  lp->sum + 1);
       MEMCOPY(newBB->lowbo, parentBB->lowbo, lp->sum + 1);
     }
@@ -85,7 +85,7 @@ STATIC BBrec *push_BB(lprec *lp, BBrec *parentBB, int varno, int vartype, int va
   /* Do initialization and updates */
   if(parentBB == NULL)
     parentBB = lp->bb_bounds;
-  newBB = create_BB(lp, parentBB, FALSE);
+  newBB = create_BB(lp, parentBB, FFALSE);
   if(newBB != NULL) {
 
     newBB->varno = varno;
@@ -105,7 +105,7 @@ STATIC BBrec *push_BB(lprec *lp, BBrec *parentBB, int varno, int vartype, int va
       for(k = 1; k <= lp->nzdrow[0]; k++) {
         ii = lp->nzdrow[k];
 #ifdef UseMilpSlacksRCF  /* Check if we should include ranged constraints */
-        isINT = FALSE;
+        isINT = FFALSE;
 #else
         if(ii <= lp->rows)
           continue;
@@ -155,7 +155,7 @@ STATIC BBrec *push_BB(lprec *lp, BBrec *parentBB, int varno, int vartype, int va
       newBB = pop_BB(newBB);
     else if(MIP_count(lp) > 0) {
       if( (lp->bb_level <= 1) && (lp->bb_varactive == NULL) &&
-          (!allocINT(lp, &lp->bb_varactive, lp->columns+1, TRUE) ||
+          (!allocINT(lp, &lp->bb_varactive, lp->columns+1, FTRUE) ||
            !initcuts_BB(lp)) )
         newBB = pop_BB(newBB);
       if(varno > 0) {
@@ -168,7 +168,7 @@ STATIC BBrec *push_BB(lprec *lp, BBrec *parentBB, int varno, int vartype, int va
 
 STATIC MYBOOL free_BB(BBrec **BB)
 {
-  MYBOOL parentreturned = FALSE;
+  MYBOOL parentreturned = FFALSE;
 
   if((BB != NULL) && (*BB != NULL)) {
     BBrec *parent = (*BB)->parent;
@@ -237,7 +237,7 @@ STATIC BBrec *pop_BB(BBrec *BB)
     }
     if(lp->int_vars+lp->sc_vars > 0)
       free_pseudocost(lp);
-    pop_basis(lp, FALSE);
+    pop_basis(lp, FFALSE);
     lp->rootbounds = NULL;
   }
   else
@@ -256,7 +256,7 @@ STATIC BBrec *pop_BB(BBrec *BB)
   /* Pop the associated basis */
 #if 1
   /* Original version that does not restore previous basis */
-  pop_basis(lp, FALSE);
+  pop_basis(lp, FFALSE);
 #else
   /* Experimental version that restores previous basis */
   pop_basis(lp, BB->isSOS);
@@ -346,7 +346,7 @@ STATIC MYBOOL initbranches_BB(BBrec *BB)
     if(BB->isGUB) {
       /* Obtain variable index list from applicable GUB - now the first GUB is used,
         but we could also consider selecting the longest */
-      BB->varmanaged = SOS_get_candidates(lp->GUB, -1, k, TRUE, BB->upbo, BB->lowbo);
+      BB->varmanaged = SOS_get_candidates(lp->GUB, -1, k, FTRUE, BB->upbo, BB->lowbo);
       BB->nodesleft++;
     }
 
@@ -355,7 +355,7 @@ STATIC MYBOOL initbranches_BB(BBrec *BB)
     if(BB->vartype == BB_SOS) {
       if(!SOS_can_activate(lp->SOS, 0, k)) {
         BB->nodesleft--;
-        BB->isfloor = TRUE;
+        BB->isfloor = FTRUE;
       }
       else
         BB->isfloor = (MYBOOL) (BB->lastsolution == 0);
@@ -375,7 +375,7 @@ STATIC MYBOOL initbranches_BB(BBrec *BB)
       BB->isfloor = (MYBOOL) (new_bound <= 0.5);
 
       /* Set direction by OF value; note that a zero-value in
-         the OF gives priority to floor_first = TRUE */
+         the OF gives priority to floor_first = FTRUE */
       if(is_bb_mode(lp, NODE_GREEDYMODE)) {
         if(is_bb_mode(lp, NODE_PSEUDOCOSTMODE))
           BB->sc_bound = get_pseudonodecost(lp->bb_PseudoCost, k, BB->vartype, BB->lastsolution);
@@ -387,8 +387,8 @@ STATIC MYBOOL initbranches_BB(BBrec *BB)
       }
       /* Set direction by pseudocost (normally used in tandem with NODE_PSEUDOxxxSELECT) */
       else if(is_bb_mode(lp, NODE_PSEUDOCOSTMODE)) {
-        BB->isfloor = (MYBOOL) (get_pseudobranchcost(lp->bb_PseudoCost, k, TRUE) >
-                                get_pseudobranchcost(lp->bb_PseudoCost, k, FALSE));
+        BB->isfloor = (MYBOOL) (get_pseudobranchcost(lp->bb_PseudoCost, k, FTRUE) >
+                                get_pseudobranchcost(lp->bb_PseudoCost, k, FFALSE));
         if(is_maxim(lp))
           BB->isfloor = !BB->isfloor;
       }
@@ -432,7 +432,7 @@ STATIC MYBOOL fillbranches_BB(BBrec *BB)
   REAL   ult_upbo, ult_lowbo;
   REAL   new_bound, SC_bound, intmargin = BB->lp->epsprimal;
   lprec  *lp = BB->lp;
-  MYBOOL OKstatus = FALSE;
+  MYBOOL OKstatus = FFALSE;
 
   if(lp->bb_break || userabort(lp, MSG_MILPSTRATEGY))
     return( OKstatus );
@@ -446,7 +446,7 @@ STATIC MYBOOL fillbranches_BB(BBrec *BB)
     ult_lowbo = lp->orig_lowbo[K];
     SC_bound  = unscaled_value(lp, BB->sc_bound, K);
 
-    /* First, establish the upper bound to be applied (when isfloor == TRUE)
+    /* First, establish the upper bound to be applied (when isfloor == FTRUE)
        --------------------------------------------------------------------- */
 /*SetUB:*/
     BB->UPbound = lp->infinite;
@@ -511,7 +511,7 @@ STATIC MYBOOL fillbranches_BB(BBrec *BB)
     BB->UPbound = new_bound;
 
 
-    /* Next, establish the lower bound to be applied (when isfloor == FALSE)
+    /* Next, establish the lower bound to be applied (when isfloor == FFALSE)
        --------------------------------------------------------------------- */
 SetLB:
     BB->LObound = -lp->infinite;
@@ -602,9 +602,9 @@ Finish:
       if((BB->vartype != BB_SOS) && (fabs(BB->LObound-BB->UPbound) < intmargin)) {
         BB->nodesleft--;
         if(fabs(BB->lowbo[K]-BB->LObound) < intmargin)
-          BB->isfloor = FALSE;
+          BB->isfloor = FFALSE;
         else if(fabs(BB->upbo[K]-BB->UPbound) < intmargin)
-          BB->isfloor = TRUE;
+          BB->isfloor = FTRUE;
         else
           report(BB->lp, IMPORTANT, "fillbranches_BB: Inconsistent equal-valued bounds for %s\n",
                                     get_col_name(BB->lp, k));
@@ -626,7 +626,7 @@ Finish:
   }
   else {
     BB->nodesleft--;
-    OKstatus = TRUE;
+    OKstatus = FTRUE;
   }
 
   return( OKstatus );
@@ -636,7 +636,7 @@ STATIC MYBOOL nextbranch_BB(BBrec *BB)
 {
   int    k;
   lprec  *lp = BB->lp;
-  MYBOOL OKstatus = FALSE;
+  MYBOOL OKstatus = FFALSE;
 
   /* Undo the most recently imposed B&B bounds using the data
      in the last level of change tracker; this code handles changes
@@ -650,8 +650,8 @@ STATIC MYBOOL nextbranch_BB(BBrec *BB)
     /* Handle the special case of B&B restart;
        (typically used with the restart after pseudocost initialization) */
     if((lp->bb_level == 1) && (lp->bb_break == AUTOMATIC)) {
-      lp->bb_break = FALSE;
-      OKstatus = TRUE;
+      lp->bb_break = FFALSE;
+      OKstatus = FTRUE;
     }
     return( OKstatus );
   }
@@ -688,8 +688,8 @@ STATIC MYBOOL nextbranch_BB(BBrec *BB)
         }
       }
       else {
-        SOS_set_marked(lp->SOS, 0, k, TRUE);
-        if(SOS_fix_unmarked(lp->SOS, 0, k, BB->upbo, 0, TRUE,
+        SOS_set_marked(lp->SOS, 0, k, FTRUE);
+        if(SOS_fix_unmarked(lp->SOS, 0, k, BB->upbo, 0, FTRUE,
                             NULL, lp->bb_upperchange) < 0)
           return( OKstatus );
       }
@@ -721,13 +721,13 @@ STATIC MYBOOL nextbranch_BB(BBrec *BB)
       /* Handle one ceil instance;
          (selected variable at 1, all other at 0) */
       else {
-        if(SOS_fix_unmarked(lp->GUB, 0, k, BB->upbo, 0, TRUE,
+        if(SOS_fix_unmarked(lp->GUB, 0, k, BB->upbo, 0, FTRUE,
                             NULL, lp->bb_upperchange) < 0)
           return( OKstatus );
       }
     }
 
-    OKstatus = TRUE;
+    OKstatus = FTRUE;
 
   }
   /* Initialize simplex status variables */
@@ -743,7 +743,7 @@ STATIC MYBOOL nextbranch_BB(BBrec *BB)
 /* Cut generation and management routines */
 STATIC MYBOOL initcuts_BB(lprec *lp)
 {
-  return( TRUE );
+  return( FTRUE );
 }
 
 STATIC int updatecuts_BB(lprec *lp)
@@ -755,7 +755,7 @@ STATIC MYBOOL freecuts_BB(lprec *lp)
 {
   if(lp->bb_cuttype != NULL)
     FREE(lp->bb_cuttype);
-  return( TRUE );
+  return( FTRUE );
 }
 
 /* B&B solver routines */
@@ -795,7 +795,7 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
     /* Copy user-specified entering bounds into lp_solve working bounds and run */
     status = spx_run(lp, (MYBOOL) (tilted+restored > 0));
     lp->bb_status     = status;
-    lp->spx_perturbed = FALSE;
+    lp->spx_perturbed = FFALSE;
 
     if(tilted < 0)
       break;
@@ -815,13 +815,13 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
       else
         impose_bounds(lp, perturbed->upbo, perturbed->lowbo);
       set_action(&lp->spx_action, ACTION_REBASE | ACTION_RECOMPUTE);
-      BB->UBzerobased = FALSE;
+      BB->UBzerobased = FFALSE;
       if(lp->bb_totalnodes == 0)
         lp->real_solution = lp->infinite;
       status = RUNNING;
       tilted--;
       restored++;
-      lp->spx_perturbed = TRUE;
+      lp->spx_perturbed = FTRUE;
     }
 
     else if(((lp->bb_level <= 1) ||     is_anti_degen(lp, ANTIDEGEN_DURINGBB)) &&
@@ -836,22 +836,22 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
         /* Create working copy of ingoing bounds if this is the first perturbation */
         if(tilted == 0)
           perturbed = BB;
-        perturbed = create_BB(lp, perturbed, TRUE);
+        perturbed = create_BB(lp, perturbed, FTRUE);
 
         /* Perturb/shift variable bounds; also make sure we rebase and recompute
            (no refactorization is necessary, since the basis is unchanged) */
 #if 1
-        perturb_bounds(lp, perturbed, TRUE, TRUE, TRUE);
+        perturb_bounds(lp, perturbed, FTRUE, FTRUE, FTRUE);
 #else
-        perturb_bounds(lp, perturbed, TRUE, TRUE, FALSE);
+        perturb_bounds(lp, perturbed, FTRUE, FTRUE, FFALSE);
 #endif
         impose_bounds(lp, perturbed->upbo, perturbed->lowbo);
         set_action(&lp->spx_action, ACTION_REBASE | ACTION_RECOMPUTE);
-        BB->UBzerobased = FALSE;
+        BB->UBzerobased = FFALSE;
         status = RUNNING;
         tilted++;
         lp->perturb_count++;
-        lp->spx_perturbed = TRUE;
+        lp->spx_perturbed = FTRUE;
         if(lp->spx_trace)
           report(lp, DETAILED, "solve_LP: Starting bound relaxation #%d ('%s')\n",
                                tilted, get_statustext(lp, status));
@@ -887,7 +887,7 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
          ((lp->simplex_mode & (SIMPLEX_Phase2_PRIMAL | SIMPLEX_Phase2_DUAL)) > 0)) {
         lp->solutioncount++;
         construct_solution(lp, NULL);
-        transfer_solution(lp, TRUE);
+        transfer_solution(lp, FTRUE);
       }
       /* Return messages */
       report(lp, NORMAL, "\nlp_solve optimization was stopped %s.\n",
@@ -927,7 +927,7 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
       if((lp->usermessage != NULL) && (lp->msgmask & MSG_LPOPTIMAL)) {
         REAL *best_solution = lp->best_solution;
 
-        /* transfer_solution(lp, TRUE); */
+        /* transfer_solution(lp, FTRUE); */
         lp->best_solution = lp->solution;
         lp->usermessage(lp, lp->msghandle, MSG_LPOPTIMAL);
         lp->best_solution = best_solution;
@@ -1023,7 +1023,7 @@ STATIC int rcfbound_BB(BBrec *BB, int varno, MYBOOL isINT, REAL *newbound, MYBOO
 
       /* Check and set feasibility status */
       if((isfeasible != NULL) && (upbo - lowbo < -lp->epsprimal))
-        *isfeasible = FALSE;
+        *isfeasible = FFALSE;
 
       /* Flag that we can fix the variable by returning the relation code negated */
       else if(fabs(upbo - lowbo) < lp->epsprimal)
@@ -1043,7 +1043,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
 {
   int    countsossc, countnint, k, reasonmsg = MSG_NONE;
   REAL   varsol;
-  MYBOOL is_better = FALSE, is_equal = FALSE, is_feasible = TRUE;
+  MYBOOL is_better = FFALSE, is_equal = FFALSE, is_feasible = FTRUE;
   lprec  *lp = BB->lp;
 
   /* Initialize result and return variables */
@@ -1064,13 +1064,13 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
         2) B&B level relative to the "B&B order" (bb_limitlevel < 0). */
     countsossc =  lp->sos_vars + lp->sc_vars;
     if((lp->bb_limitlevel > 0) && (lp->bb_level > lp->bb_limitlevel+countsossc))
-      return( FALSE );
+      return( FFALSE );
     else if((lp->bb_limitlevel < 0) &&
             (lp->bb_level > 2*(lp->int_vars+countsossc)*abs(lp->bb_limitlevel))) {
       if(lp->bb_limitlevel == DEF_BB_LIMITLEVEL)
         report(lp, IMPORTANT, "findnode_BB: Default B&B limit reached at %d; optionally change strategy or limit.\n\n",
                               lp->bb_level);
-      return( FALSE );
+      return( FFALSE );
     }
 
     /* First initialize or update pseudo-costs from previous optimal solution */
@@ -1091,7 +1091,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
       if(lp->bb_trace)
         report(lp, IMPORTANT, "findnode_BB: Simplex failure due to loss of numeric accuracy\n");
       lp->spx_status = NUMFAILURE;
-      return( FALSE );
+      return( FFALSE );
     }
 
     /* Abandon this branch if the solution is "worse" than a heuristically
@@ -1100,7 +1100,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
        ((lp->solutioncount > 0) &&
         (!bb_better(lp, OF_INCUMBENT | OF_DELTA, OF_TEST_BE | OF_TEST_RELGAP) ||
          !bb_better(lp, OF_INCUMBENT | OF_DELTA, OF_TEST_BE)))) {
-      return( FALSE );
+      return( FFALSE );
     }
 
     /* Collect violated SC variables (since they can also be real-valued); the
@@ -1113,7 +1113,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
 
     /* Look among SOS variables if no SC candidate was found */
     if((SOS_count(lp) > 0) && (*varno == 0)) {
-      *varno = find_sos_bbvar(lp, &countnint, FALSE);
+      *varno = find_sos_bbvar(lp, &countnint, FFALSE);
       if(*varno < 0)
         *varno = 0;
       else if(*varno > 0)
@@ -1127,7 +1127,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
         *vartype = BB_INT;
         if((countnint == 1) && !is_feasible) {
           BB->lastrcf = 0;
-          return( FALSE );
+          return( FFALSE );
         }
       }
     }
@@ -1144,7 +1144,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
 */
       /*  set_action(&lp->nomessage, NOMSG_BBLIMIT); */
       /* } */
-      return( FALSE );
+      return( FFALSE );
     }
 #endif
 
@@ -1189,7 +1189,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
         }
 
         if(lp->bb_trace ||
-           ((lp->verbose >= NORMAL) && (lp->print_sol == FALSE) && (lp->lag_status != RUNNING))) {
+           ((lp->verbose >= NORMAL) && (lp->print_sol == FFALSE) && (lp->lag_status != RUNNING))) {
           report(lp, IMPORTANT,
                  "%s solution " RESULTVALUEMASK " after %10.0f iter, %9.0f nodes (gap %.1f%%)\n",
                  (lp->bb_improvements == 0) ? "Feasible" : "Improved",
@@ -1211,12 +1211,12 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
 
         if(lp->bb_breakfirst ||
            (!is_infinite(lp, lp->bb_breakOF) && bb_better(lp, OF_USERBREAK, OF_TEST_BE)))
-          lp->bb_break = TRUE;
+          lp->bb_break = FTRUE;
       }
     }
   }
   else {
-    is_better = TRUE;
+    is_better = FTRUE;
     lp->solutioncount = 1;
   }
 
@@ -1229,8 +1229,8 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
       lp->solutioncount = 0;
       lp->spx_status = NUMFAILURE;
       lp->bb_status = lp->spx_status;
-      lp->bb_break = TRUE;
-      return( FALSE );
+      lp->bb_break = FTRUE;
+      return( FFALSE );
     }
 #endif
     transfer_solution(lp, (MYBOOL) ((lp->do_presolve & PRESOLVE_LASTMASKMODE) != PRESOLVE_NONE));
@@ -1245,7 +1245,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
     if((reasonmsg != MSG_NONE) && (lp->msgmask & reasonmsg) && (lp->usermessage != NULL))
       lp->usermessage(lp, lp->msghandle, reasonmsg);
 
-    if(lp->print_sol != FALSE) {
+    if(lp->print_sol != FFALSE) {
       print_objective(lp);
       print_solution(lp, 1);
     }
@@ -1257,7 +1257,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
     if((countnint == 0) && (lp->solutioncount == 1) && (lp->solutionlimit == 1) &&
        (bb_better(lp, OF_DUALLIMIT, OF_TEST_BE) || bb_better(lp, OF_USERBREAK, OF_TEST_BE | OF_TEST_RELGAP))) {
       lp->bb_break = (MYBOOL) (countnint == 0);
-      return( FALSE );
+      return( FFALSE );
     }
     else if(lp->bb_level > 0) {
 #ifdef MIPboundWithOF
@@ -1271,7 +1271,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
     return( (MYBOOL) (*varno > 0));
   }
   else
-    return( FALSE );
+    return( FFALSE );
 
 }
 
@@ -1320,12 +1320,12 @@ STATIC int solve_BB(BBrec *BB)
 /* Routine to compute a "strong" pseudo-cost update for a node */
 STATIC MYBOOL strongbranch_BB(lprec *lp, BBrec *BB, int varno, int vartype, int varcus)
 {
-  MYBOOL   success = FALSE;
+  MYBOOL   success = FFALSE;
   int      i;
   BBrec    *strongBB;
 
   /* Create new B&B level and solve each of the branches */
-  lp->is_strongbranch = TRUE;
+  lp->is_strongbranch = FTRUE;
   push_basis(lp, lp->var_basic, lp->is_basic, lp->is_lower);
   strongBB = push_BB(lp, BB, lp->rows+varno, vartype, varcus);
   if(strongBB == BB)
@@ -1344,7 +1344,7 @@ STATIC MYBOOL strongbranch_BB(lprec *lp, BBrec *BB, int varno, int vartype, int 
       /* Compute new count of non-ints */
       strongBB->lastvarcus = 0;
       for(i = 1; i <= lp->columns; i++) {
-        if(is_int(lp, i) && !solution_is_int(lp, lp->rows+i, FALSE))
+        if(is_int(lp, i) && !solution_is_int(lp, lp->rows+i, FFALSE))
           strongBB->lastvarcus++;
       }
 
@@ -1359,10 +1359,10 @@ STATIC MYBOOL strongbranch_BB(lprec *lp, BBrec *BB, int varno, int vartype, int 
   if(strongBB != BB)
     report(lp, SEVERE, "strongbranch_BB: Invalid bound settings restored for variable %d\n",
                        varno);
-  pop_basis(lp, TRUE);
+  pop_basis(lp, FTRUE);
   set_action(&lp->spx_action, ACTION_REBASE | ACTION_REINVERT | ACTION_RECOMPUTE);
 
-  lp->is_strongbranch = FALSE;
+  lp->is_strongbranch = FFALSE;
 
   return( success );
 }
@@ -1370,11 +1370,11 @@ STATIC MYBOOL strongbranch_BB(lprec *lp, BBrec *BB, int varno, int vartype, int 
 /* Future functions */
 STATIC MYBOOL pre_BB(lprec *lp)
 {
-  return( TRUE );
+  return( FTRUE );
 }
 STATIC MYBOOL post_BB(lprec *lp)
 {
-  return( TRUE );
+  return( FTRUE );
 }
 
 /* This is the non-recursive B&B driver routine - beautifully simple, yet so subtle! */

@@ -142,12 +142,12 @@ typedef struct parse_vars_s
   void *userhandle;
   char HadVar, HadVar0, HadVar1, HadVar2, HasAR_M_OP, HadConstraint, Had_lineair_sum, Had_lineair_sum0, do_add_row, HadSign, OP, Sign, isign, isign0, make_neg;
   char state, state0;
-  char Within_int_decl;  /* TRUE when we are within an char declaration */
-  char Within_bin_decl;  /* TRUE when we are within an bin declaration */
-  char Within_sec_decl;  /* TRUE when we are within a sec declaration */
-  char Within_sos_decl;  /* TRUE when we are within a sos declaration */
+  char Within_int_decl;  /* FTRUE when we are within an char declaration */
+  char Within_bin_decl;  /* FTRUE when we are within an bin declaration */
+  char Within_sec_decl;  /* FTRUE when we are within a sec declaration */
+  char Within_sos_decl;  /* FTRUE when we are within a sos declaration */
   char Within_sos_decl1;
-  char Within_free_decl; /* TRUE when we are within a free declaration */
+  char Within_free_decl; /* FTRUE when we are within a free declaration */
   short SOStype, SOStype0;        /* SOS type */
   int SOSNr;
   int SOSweight;         /* SOS weight */
@@ -169,7 +169,7 @@ extern "C" {
 
 static int isatty(int f)
 {
-  return(FALSE);
+  return(FFALSE);
 }
 
 #if !defined _STDLIB_H
@@ -1579,22 +1579,22 @@ lp_yyreduce:
   pv->isign = 0;
   pv->make_neg = 0;
   pv->Sign = 0;
-  pv->HadConstraint = FALSE;
-  pv->HadVar = pv->HadVar0 = FALSE;
+  pv->HadConstraint = FFALSE;
+  pv->HadVar = pv->HadVar0 = FFALSE;
 }
     break;
 
   case 5:
 
     {
-  set_obj_dir(PARM, TRUE);
+  set_obj_dir(PARM, FTRUE);
 }
     break;
 
   case 6:
 
     {
-  set_obj_dir(PARM, FALSE);
+  set_obj_dir(PARM, FFALSE);
 }
     break;
 
@@ -1605,8 +1605,8 @@ lp_yyreduce:
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
   add_row(pp);
-  pv->HadConstraint = FALSE;
-  pv->HadVar = pv->HadVar0 = FALSE;
+  pv->HadConstraint = FFALSE;
+  pv->HadVar = pv->HadVar0 = FFALSE;
   pv->isign = 0;
   pv->make_neg = 0;
 }
@@ -1620,7 +1620,7 @@ lp_yyreduce:
 
   if(!add_constraint_name(pp, pv->Last_var))
     YYABORT;
-  pv->HadConstraint = TRUE;
+  pv->HadConstraint = FTRUE;
 }
     break;
 
@@ -1631,7 +1631,7 @@ lp_yyreduce:
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
   pv->HadVar1 = pv->HadVar0;
-  pv->HadVar0 = FALSE;
+  pv->HadVar0 = FFALSE;
 }
     break;
 
@@ -1655,10 +1655,10 @@ lp_yyreduce:
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
   pv->Had_lineair_sum0 = pv->Had_lineair_sum;
-  pv->Had_lineair_sum = TRUE;
+  pv->Had_lineair_sum = FTRUE;
   pv->HadVar2 = pv->HadVar0;
-  pv->HadVar0 = FALSE;
-  pv->do_add_row = FALSE;
+  pv->HadVar0 = FFALSE;
+  pv->do_add_row = FFALSE;
   if(pv->HadConstraint && !pv->HadVar ) {
     /* it is a range */
     /* already handled */
@@ -1666,14 +1666,14 @@ lp_yyreduce:
   else if(!pv->HadConstraint && pv->HadVar) {
     /* it is a bound */
 
-    if(!store_bounds(pp, TRUE))
+    if(!store_bounds(pp, FTRUE))
       YYABORT;
   }
   else {
     /* it is a row restriction */
     if(pv->HadConstraint && pv->HadVar)
       store_re_op(pp, '\0', (int) pv->HadConstraint, (int) pv->HadVar, (int) pv->Had_lineair_sum); /* makes sure that data stored in temporary buffers is treated correctly */
-    pv->do_add_row = TRUE;
+    pv->do_add_row = FTRUE;
   }
 }
     break;
@@ -1690,11 +1690,11 @@ lp_yyreduce:
   }
   if(pv->do_add_row)
     add_row(pp);
-  pv->HadConstraint = FALSE;
-  pv->HadVar = pv->HadVar0 = FALSE;
+  pv->HadConstraint = FFALSE;
+  pv->HadVar = pv->HadVar0 = FFALSE;
   pv->isign = 0;
   pv->make_neg = 0;
-  null_tmp_store(pp, TRUE);
+  null_tmp_store(pp, FTRUE);
 }
     break;
 
@@ -1719,8 +1719,8 @@ lp_yyreduce:
   pv->make_neg = 0;
   pv->isign = 0;
   if(pv->HadConstraint)
-    pv->HadVar = pv->Had_lineair_sum = FALSE;
-  pv->HadVar0 = FALSE;
+    pv->HadVar = pv->Had_lineair_sum = FFALSE;
+  pv->HadVar0 = FFALSE;
   if(!store_re_op(pp, (char) ((pv->OP == '<') ? '>' : (pv->OP == '>') ? '<' : pv->OP), (int) pv->HadConstraint, (int) pv->HadVar, (int) pv->Had_lineair_sum))
     YYABORT;
 }
@@ -1756,7 +1756,7 @@ lp_yyreduce:
   else if(!pv->HadConstraint && pv->HadVar) {
     /* it is a bound */
 
-    if(!store_bounds(pp, TRUE))
+    if(!store_bounds(pp, FTRUE))
       YYABORT;
   }
 }
@@ -1774,7 +1774,7 @@ lp_yyreduce:
     lp_yyerror(pp, pp->scanner, "parse error");
     YYABORT;
   }
-  pv->Had_lineair_sum = FALSE;
+  pv->Had_lineair_sum = FFALSE;
 }
     break;
 
@@ -1784,7 +1784,7 @@ lp_yyreduce:
   parse_parm *pp = PARM;
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
-  pv->Had_lineair_sum = TRUE;
+  pv->Had_lineair_sum = FTRUE;
 }
     break;
 
@@ -1860,7 +1860,7 @@ lp_yyreduce:
       YYABORT;
     }
     pv->HadConstraint |= pv->HadVar;
-    pv->HadVar = pv->HadVar0 = TRUE;
+    pv->HadVar = pv->HadVar0 = FTRUE;
   }
   pv->state0 = pv->state;
 }
@@ -1916,7 +1916,7 @@ lp_yyreduce:
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
   pv->isign = 0;
-  pv->HadSign = FALSE;
+  pv->HadSign = FFALSE;
 }
     break;
 
@@ -1927,7 +1927,7 @@ lp_yyreduce:
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
   pv->isign = pv->Sign;
-  pv->HadSign = TRUE;
+  pv->HadSign = FTRUE;
 }
     break;
 
@@ -1937,7 +1937,7 @@ lp_yyreduce:
   parse_parm *pp = PARM;
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
-  pv->HasAR_M_OP = FALSE;
+  pv->HasAR_M_OP = FFALSE;
 }
     break;
 
@@ -1947,7 +1947,7 @@ lp_yyreduce:
   parse_parm *pp = PARM;
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
-  pv->HasAR_M_OP = TRUE;
+  pv->HasAR_M_OP = FTRUE;
 }
     break;
 

@@ -45,7 +45,7 @@ STATIC int write_lprow(lprec *lp, int rowno, void *userhandle, write_modeldata_f
 {
   int     i, j, nchars, elements;
   REAL    a;
-  MYBOOL  first = TRUE;
+  MYBOOL  first = FTRUE;
   char    buf[50];
 
   elements = get_rowex(lp, rowno, val, idx);
@@ -59,7 +59,7 @@ STATIC int write_lprow(lprec *lp, int rowno, void *userhandle, write_modeldata_f
       if(!first)
         nchars += write_data(userhandle, write_modeldata, " ");
       else
-        first = FALSE;
+        first = FFALSE;
       sprintf(buf, "%+.12g", (double)a);
       if(strcmp(buf, "-1") == 0)
         nchars += write_data(userhandle, write_modeldata, "-");
@@ -95,14 +95,14 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
 
   if(!mat_validate(lp->matA)) {
     report(lp, IMPORTANT, "LP_writefile: Could not validate the data matrix.\n");
-    return(FALSE);
+    return(FFALSE);
   }
 
   /* Write name of model */
   ptr = get_lp_name(lp);
   if(ptr != NULL) {
     if(*ptr)
-      write_lpcomment(userhandle, write_modeldata, ptr, FALSE);
+      write_lpcomment(userhandle, write_modeldata, ptr, FFALSE);
     else
       ptr = NULL;
   }
@@ -114,8 +114,8 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
   else
     write_data(userhandle, write_modeldata, "min: ");
 
-  allocREAL(lp, &val, 1 + lp->columns, TRUE);
-  allocINT(lp, &idx, 1 + lp->columns, TRUE);
+  allocREAL(lp, &val, 1 + lp->columns, FTRUE);
+  allocINT(lp, &idx, 1 + lp->columns, FTRUE);
 
   write_lprow(lp, 0, userhandle, write_modeldata, maxlen, idx, val);
   a = get_rh(lp, 0);
@@ -125,7 +125,7 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
 
   /* Write constraints */
   if(nrows > 0)
-    write_lpcomment(userhandle, write_modeldata, "Constraints", TRUE);
+    write_lpcomment(userhandle, write_modeldata, "Constraints", FTRUE);
   for(j = 1; j <= nrows; j++) {
     if(((lp->names_used) && (lp->row_name[j] != NULL)) || (write_lprow(lp, j, userhandle, NULL, maxlen, idx, val) == 1))
       ptr = get_row_name(lp, j);
@@ -183,13 +183,13 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
   }
 
   /* Write bounds on variables */
-  ok = FALSE;
+  ok = FFALSE;
   for(i = nrows + 1; i <= lp->sum; i++)
     if(!is_splitvar(lp, i - nrows)) {
       if(lp->orig_lowbo[i] == lp->orig_upbo[i]) {
         if(!ok) {
-          write_lpcomment(userhandle, write_modeldata, "Variable bounds", TRUE);
-          ok = TRUE;
+          write_lpcomment(userhandle, write_modeldata, "Variable bounds", FTRUE);
+          ok = FTRUE;
         }
         write_data(userhandle, write_modeldata, "%s = %.12g;\n", get_col_name(lp, i - nrows), get_upbo(lp, i - nrows));
       }
@@ -197,8 +197,8 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
 #ifndef SingleBoundedRowInLP
         if((lp->orig_lowbo[i] != 0) && (lp->orig_upbo[i] < lp->infinite)) {
           if(!ok) {
-            write_lpcomment(userhandle, write_modeldata, "Variable bounds", TRUE);
-            ok = TRUE;
+            write_lpcomment(userhandle, write_modeldata, "Variable bounds", FTRUE);
+            ok = FTRUE;
           }
           if(lp->orig_lowbo[i] == -lp->infinite)
             write_data(userhandle, write_modeldata, "-Inf");
@@ -216,8 +216,8 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
         {
           if(lp->orig_lowbo[i] != 0) {
             if(!ok) {
-              write_lpcomment(userhandle, write_modeldata, "Variable bounds", TRUE);
-              ok = TRUE;
+              write_lpcomment(userhandle, write_modeldata, "Variable bounds", FTRUE);
+              ok = FTRUE;
             }
             if(lp->orig_lowbo[i] == -lp->infinite)
               write_data(userhandle, write_modeldata, "%s >= -Inf;\n", get_col_name(lp, i - nrows));
@@ -229,8 +229,8 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
           }
           if(lp->orig_upbo[i] != lp->infinite) {
             if(!ok) {
-              write_lpcomment(userhandle, write_modeldata, "Variable bounds", TRUE);
-              ok = TRUE;
+              write_lpcomment(userhandle, write_modeldata, "Variable bounds", FTRUE);
+              ok = FTRUE;
             }
             write_data(userhandle, write_modeldata, "%s <= %.12g;\n",
                        get_col_name(lp, i - nrows), get_upbo(lp, i - nrows));
@@ -241,7 +241,7 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
 
   /* Write optional integer section */
   if(lp->int_vars > 0) {
-    write_lpcomment(userhandle, write_modeldata, "Integer definitions", TRUE);
+    write_lpcomment(userhandle, write_modeldata, "Integer definitions", FTRUE);
     i = 1;
     while((i <= ncols) && !is_int(lp, i))
       i++;
@@ -262,7 +262,7 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
 
   /* Write optional SEC section */
   if(lp->sc_vars > 0) {
-    write_lpcomment(userhandle, write_modeldata, "Semi-continuous variables", TRUE);
+    write_lpcomment(userhandle, write_modeldata, "Semi-continuous variables", FTRUE);
     i = 1;
     while((i <= ncols) && !is_semicont(lp, i))
       i++;
@@ -284,7 +284,7 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
   /* Write optional SOS section */
   if(SOS_count(lp) > 0) {
     SOSgroup *SOS = lp->SOS;
-    write_lpcomment(userhandle, write_modeldata, "SOS definitions", TRUE);
+    write_lpcomment(userhandle, write_modeldata, "SOS definitions", FTRUE);
     write_data(userhandle, write_modeldata, "SOS\n");
     for(b = 0, i = 0; i < SOS->sos_count; b = SOS->sos_list[i]->priority, i++) {
       nchars = write_data(userhandle, write_modeldata, "%s: ",
@@ -316,7 +316,7 @@ MYBOOL __WINAPI write_lpex(lprec *lp, void *userhandle, write_modeldata_func wri
   FREE(val);
   FREE(idx);
 
-  ok = TRUE;
+  ok = FTRUE;
 
   return(ok);
 }

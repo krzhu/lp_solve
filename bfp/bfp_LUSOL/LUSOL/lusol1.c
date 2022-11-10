@@ -780,7 +780,7 @@ x520:
 /*      Spare space is free. */
       LUSOL->indc[L] = 0;
     }
-    ATEND = TRUE;
+    ATEND = FTRUE;
     *JLAST = J;
     L1 = LC1;
     L2 = *LCOL;
@@ -892,7 +892,7 @@ x900:
                 to exit before any pivot had been found.
                 Introduced kbest = mbest / nz1.
                 Most pivots can be rejected with no integer multiply.
-                TRUE merit is evaluated only if it's as good as the
+                FTRUE merit is evaluated only if it's as good as the
                 best so far (or better).  There should be no danger
                 of integer overflow unless A is incredibly
                 large and dense.
@@ -2267,7 +2267,7 @@ void LU1FAD(LUSOLrec *LUSOL,
   LPRINT = LUSOL->luparm[LUSOL_IP_PRINTLEVEL];
   MAXCOL = LUSOL->luparm[LUSOL_IP_MARKOWITZ_MAXCOL];
   LPIV   = LUSOL->luparm[LUSOL_IP_PIVOTTYPE];
-  KEEPLU = (MYBOOL) (LUSOL->luparm[LUSOL_IP_KEEPLU]!=FALSE);
+  KEEPLU = (MYBOOL) (LUSOL->luparm[LUSOL_IP_KEEPLU]!=FFALSE);
 /*      Threshold Partial   Pivoting (normal). */
   TPP = (MYBOOL) (LPIV==LUSOL_PIVMOD_TPP);
 /*      Threshold Rook      Pivoting */
@@ -2276,7 +2276,7 @@ void LU1FAD(LUSOLrec *LUSOL,
   TCP = (MYBOOL) (LPIV==LUSOL_PIVMOD_TCP);
 /*      Threshold Symmetric Pivoting. */
   TSP = (MYBOOL) (LPIV==LUSOL_PIVMOD_TSP);
-  DENSLU = FALSE;
+  DENSLU = FFALSE;
   MAXROW = MAXCOL-1;
 /*      Assume row m is last in the row file. */
   ILAST = LUSOL->m;
@@ -2308,11 +2308,11 @@ void LU1FAD(LUSOLrec *LUSOL,
   USPACE = LUSOL->parmlu[LUSOL_RP_COMPSPACE_U];
   DENS1 = LUSOL->parmlu[LUSOL_RP_MARKOWITZ_CONLY];
   DENS2 = LUSOL->parmlu[LUSOL_RP_MARKOWITZ_DENSE];
-  UTRI = TRUE;
-  LTRI = FALSE;
-  SPARS1 = FALSE;
-  SPARS2 = FALSE;
-  DENSE = FALSE;
+  UTRI = FTRUE;
+  LTRI = FFALSE;
+  SPARS1 = FFALSE;
+  SPARS2 = FFALSE;
+  DENSE = FFALSE;
 /*      Check parameters. */
   SETMAX(LTOL,1.0001E+0);
   SETMIN(DENS1,DENS2);
@@ -2459,10 +2459,10 @@ x250:
               TPP and TSP call lu1mxc for the first time
               (to move biggest element to top of each column). */
       if(LPRINT>=LUSOL_MSG_PIVOT)
-        LUSOL_report(LUSOL, 0, "Utri ended.  spars1 = TRUE\n");
-      UTRI = FALSE;
-      LTRI = TRUE;
-      SPARS1 = TRUE;
+        LUSOL_report(LUSOL, 0, "Utri ended.  spars1 = FTRUE\n");
+      UTRI = FFALSE;
+      LTRI = FTRUE;
+      SPARS1 = FTRUE;
       *NUTRI = NROWU-1;
       if(TPP || TSP)
         LU1MXC(LUSOL, LQ1,LUSOL->n,LUSOL->iq);
@@ -2507,7 +2507,7 @@ x250:
                  We are still looking for the (forward) triangle of A
                  that forms the first rows and columns of L. */
         if(MBEST>0) {
-          LTRI = FALSE;
+          LTRI = FFALSE;
           *NLTRI = NROWU-1-*NUTRI;
           if(LPRINT>=LUSOL_MSG_PIVOT)
             LUSOL_report(LUSOL, 0, "Ltri ended.\n");
@@ -2516,12 +2516,12 @@ x250:
       else {
 /*               See if what's left is as dense as dens1. */
         if(NZLEFT>=(DENS1*MLEFT)*NLEFT) {
-          SPARS1 = FALSE;
-          SPARS2 = TRUE;
+          SPARS1 = FFALSE;
+          SPARS2 = FTRUE;
           *NDENS1 = NLEFT;
           MAXROW = 0;
           if(LPRINT>=LUSOL_MSG_PIVOT)
-            LUSOL_report(LUSOL, 0, "spars1 ended.  spars2 = TRUE\n");
+            LUSOL_report(LUSOL, 0, "spars1 ended.  spars2 = FTRUE\n");
         }
       }
     }
@@ -2562,12 +2562,12 @@ x250:
 /*            See if what's left is as dense as dens2. */
       if(SPARS2) {
         if(NZLEFT>=(DENS2*MLEFT)*NLEFT) {
-          SPARS2 = FALSE;
-          DENSE = TRUE;
+          SPARS2 = FFALSE;
+          DENSE = FTRUE;
           *NDENS2 = NLEFT;
           MAXCOL = 1;
           if(LPRINT>=LUSOL_MSG_PIVOT)
-            LUSOL_report(LUSOL, 0, "spars2 ended.  dense = TRUE\n");
+            LUSOL_report(LUSOL, 0, "spars2 ended.  dense = FTRUE\n");
         }
       }
     }
@@ -2588,11 +2588,11 @@ x250:
                               involve overlapping storage
                               (fatal with parallel dcopy).
    */
-        DENSLU = TRUE;
+        DENSLU = FTRUE;
         *NDENS2 = NLEFT;
         LD = LU1-LEND;
         if(LCOL>=LD) {
-          LU1REC(LUSOL, LUSOL->n,TRUE,&LCOL,
+          LU1REC(LUSOL, LUSOL->n,FTRUE,&LCOL,
                         LUSOL->indc,LUSOL->lenc,LUSOL->locc);
           LFILE = LCOL;
           JLAST = LUSOL->indc[LCOL+1];
@@ -2705,7 +2705,7 @@ x300:
 #endif
     NFREE = LFREE-LCOL;
     if(NFREE<MINFRE || LCOL>LIMIT) {
-      LU1REC(LUSOL, LUSOL->n,TRUE,&LCOL,
+      LU1REC(LUSOL, LUSOL->n,FTRUE,&LCOL,
                     LUSOL->indc,LUSOL->lenc,LUSOL->locc);
       LFILE = LCOL;
       JLAST = LUSOL->indc[LCOL+1];
@@ -2721,7 +2721,7 @@ x300:
 #endif
     NFREE = LFREE-LROW;
     if(NFREE<MINFRE || LROW>LIMIT) {
-      LU1REC(LUSOL, LUSOL->m,FALSE,&LROW,
+      LU1REC(LUSOL, LUSOL->m,FFALSE,&LROW,
                     LUSOL->indr,LUSOL->lenr,LUSOL->locr);
       LFILE = LROW;
       ILAST = LUSOL->indr[LROW+1];
@@ -2883,7 +2883,7 @@ x400:
 /*            The elimination was interrupted.
               Compress the column file and try again.
               lfirst, lu and nfill have appropriate new values. */
-      LU1REC(LUSOL, LUSOL->n,TRUE,&LCOL,
+      LU1REC(LUSOL, LUSOL->n,FTRUE,&LCOL,
                     LUSOL->indc,LUSOL->lenc,LUSOL->locc);
       LFILE = LCOL;
       JLAST = LUSOL->indc[LCOL+1];
@@ -2907,7 +2907,7 @@ x400:
       MINFRE = NFILL;
       NFREE = LFREE-LROW;
       if(NFREE<MINFRE) {
-        LU1REC(LUSOL, LUSOL->m,FALSE,&LROW,
+        LU1REC(LUSOL, LUSOL->m,FFALSE,&LROW,
                       LUSOL->indr,LUSOL->lenr,LUSOL->locr);
         LFILE = LROW;
         ILAST = LUSOL->indr[LROW+1];
@@ -3375,7 +3375,7 @@ void LU1FAC(LUSOLrec *LUSOL, int *INFORM)
   NELEM0 = LUSOL->nelem;
   LPRINT = LUSOL->luparm[LUSOL_IP_PRINTLEVEL];
   LPIV   = LUSOL->luparm[LUSOL_IP_PIVOTTYPE];
-  KEEPLU = (MYBOOL) (LUSOL->luparm[LUSOL_IP_KEEPLU]!=FALSE);
+  KEEPLU = (MYBOOL) (LUSOL->luparm[LUSOL_IP_KEEPLU]!=FFALSE);
 /*      Limit on size of Lij */
   LTOL   = LUSOL->parmlu[LUSOL_RP_FACTORMAX_Lij];
 /*      Drop tolerance */

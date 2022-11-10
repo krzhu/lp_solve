@@ -491,7 +491,7 @@ _Fortify_malloc(size_t size,char *file,unsigned long line)
 	{
 		if(rand() % 100 < st_MallocFailRate)
 		{
-#ifdef WARN_ON_FALSE_FAIL
+#ifdef WARN_ON_FFALSE_FAIL
 			sprintf(st_Buffer,
 					"\nFortify: %s.%ld\n         malloc(%ld) \"false\" failed\n",
 							file, line, (unsigned long)size);

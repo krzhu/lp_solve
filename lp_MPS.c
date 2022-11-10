@@ -451,7 +451,7 @@ STATIC int scan_lineFREE(lprec *lp, int section, char* line, char *field1, char 
 STATIC int addmpscolumn(lprec *lp, MYBOOL Int_section, int typeMPS, MYBOOL *Column_ready,
                         int *count, REAL *Last_column, int *Last_columnno, char *Last_col_name)
 {
-  int ok = TRUE;
+  int ok = FTRUE;
 
   if (*Column_ready) {
     ok = add_columnex(lp, *count, Last_column, Last_columnno);
@@ -464,7 +464,7 @@ STATIC int addmpscolumn(lprec *lp, MYBOOL Int_section, int typeMPS, MYBOOL *Colu
         set_bounds(lp, lp->columns, 10.0 / DEF_INFINITE, DEF_INFINITE / 10.0);
     }
   }
-  *Column_ready = FALSE;
+  *Column_ready = FFALSE;
   *count = 0;
   return(ok);
 }
@@ -475,7 +475,7 @@ STATIC MYBOOL appendmpsitem(int *count, int rowIndex[], REAL rowValue[])
   int i = *count;
 
   if(rowValue[i] == 0)
-    return( FALSE );
+    return( FFALSE );
 
   while((i > 0) && (rowIndex[i] < rowIndex[i-1])) {
     swapINT (rowIndex+i, rowIndex+i-1);
@@ -483,7 +483,7 @@ STATIC MYBOOL appendmpsitem(int *count, int rowIndex[], REAL rowValue[])
     i--;
   }
   (*count)++;
-  return( TRUE );
+  return( FTRUE );
 }
 #endif
 
@@ -493,7 +493,7 @@ STATIC MYBOOL appendmpsitem(int *count, int rowIndex[], REAL rowValue[])
 
   /* Check for non-negativity of the index */
   if(rowIndex[i] < 0)
-    return( FALSE );
+    return( FFALSE );
 
   /* Move the element so that the index list is sorted ascending */
   while((i > 0) && (rowIndex[i] < rowIndex[i-1])) {
@@ -516,12 +516,12 @@ STATIC MYBOOL appendmpsitem(int *count, int rowIndex[], REAL rowValue[])
 
   /* Update the count and return */
   (*count)++;
-  return( TRUE );
+  return( FTRUE );
 }
 
 MYBOOL MPS_readfile(lprec **newlp, char *filename, int typeMPS, int verbose)
 {
-  MYBOOL status = FALSE;
+  MYBOOL status = FFALSE;
   FILE   *fpin;
 
   fpin = fopen(filename, "r");
@@ -549,7 +549,7 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
   int    items, row, Lineno, var,
          section = MPSUNDEF, variant = 0, NZ = 0, SOS = 0;
   MYBOOL Int_section, Column_ready, Column_ready1,
-         Unconstrained_rows_found = FALSE, OF_found = FALSE, CompleteStatus = FALSE;
+         Unconstrained_rows_found = FFALSE, OF_found = FFALSE, CompleteStatus = FFALSE;
   double field4, field6;
   REAL   *Last_column = NULL;
   int    count = 0, *Last_columnno = NULL;
@@ -577,12 +577,12 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
   }
 
   if (lp != NULL) {
-    lp->source_is_file = TRUE;
+    lp->source_is_file = FTRUE;
     lp->verbose = verbose;
     strcpy(Last_col_name, "");
     strcpy(OBJNAME, "");
-    Int_section = FALSE;
-    Column_ready = FALSE;
+    Int_section = FFALSE;
+    Column_ready = FFALSE;
     Lineno = 0;
 
     /* let's initialize line to all zero's */
@@ -625,8 +625,8 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
           report(lp, FULL, "Switching to ROWS section\n");
         }
         else if(strcmp(tmp, "COLUMNS") == 0) {
-          allocREAL(lp, &Last_column, lp->rows + 1, TRUE);
-          allocINT(lp, &Last_columnno, lp->rows + 1, TRUE);
+          allocREAL(lp, &Last_column, lp->rows + 1, FTRUE);
+          allocINT(lp, &Last_columnno, lp->rows + 1, FTRUE);
           count = 0;
           if ((Last_column == NULL) || (Last_columnno == NULL))
             break;
@@ -657,7 +657,7 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
         }
         else if(strcmp(tmp, "ENDATA") == 0) {
           report(lp, FULL, "Finished reading MPS file\n");
-          CompleteStatus = TRUE;
+          CompleteStatus = FTRUE;
           break;
         }
         else { /* line does not start with space and does not match above */
@@ -717,12 +717,12 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
             else if(!OF_found) { /* take the first N row as OF, ignore others */
               if (!set_row_name(lp, 0, field2))
                 break;
-              OF_found = TRUE;
+              OF_found = FTRUE;
             }
             else if(!Unconstrained_rows_found) {
               report(lp, IMPORTANT, "Unconstrained row %s ignored\n", field2);
               report(lp, IMPORTANT, "Further messages of this kind will be suppressed\n");
-              Unconstrained_rows_found = TRUE;
+              Unconstrained_rows_found = FTRUE;
             }
           }
           else if(strcmp(field1, "L") == 0) {
@@ -758,7 +758,7 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
             else if(*field2) {
               Column_ready1 = (MYBOOL) (strcmp(field2, Last_col_name) != 0);
               if(Column_ready1) {
-                if (find_var(lp, field2, FALSE) >= 0) {
+                if (find_var(lp, field2, FFALSE) >= 0) {
                   report(lp, SEVERE, "Variable name (%s) is already used!\n", field2);
                   break;
                 }
@@ -779,11 +779,11 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
               if(strcmp(field3, "'MARKER'") != 0)
                 break;
               if(strcmp(field5, "'INTORG'") == 0) {
-                Int_section = TRUE;
+                Int_section = FTRUE;
                 report(lp, FULL, "Switching to integer section\n");
               }
               else if(strcmp(field5, "'INTEND'") == 0) {
-                Int_section = FALSE;
+                Int_section = FFALSE;
                 report(lp, FULL, "Switching to non-integer section\n");
               }
               else
@@ -797,7 +797,7 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
               Last_column[count] = (REAL)field4;
               if(appendmpsitem(&count, Last_columnno, Last_column)) {
                 NZ++;
-                Column_ready = TRUE;
+                Column_ready = FTRUE;
               }
             }
           }
@@ -809,7 +809,7 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
               Last_column[count] = (REAL)field6;
               if(appendmpsitem(&count, Last_columnno, Last_column)) {
                 NZ++;
-                Column_ready = TRUE;
+                Column_ready = FTRUE;
               }
             }
           }
@@ -861,13 +861,13 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
           report(lp, FULL, "BOUNDS line: %s %s %s %g\n",
                             field1, field2, field3, field4);
 
-          var = find_var(lp, field3, FALSE);
+          var = find_var(lp, field3, FFALSE);
           if(var < 0){ /* bound on undefined var in COLUMNS section ... */
-            Column_ready = TRUE;
-            if (!addmpscolumn(lp, FALSE, typeMPS, &Column_ready, &count, Last_column, Last_columnno, field3))
+            Column_ready = FTRUE;
+            if (!addmpscolumn(lp, FFALSE, typeMPS, &Column_ready, &count, Last_column, Last_columnno, field3))
               break;
-            Column_ready = TRUE;
-            var = find_var(lp, field3, TRUE);
+            Column_ready = FTRUE;
+            var = find_var(lp, field3, FTRUE);
           }
           if(var < 0) /* undefined var and could add ... */;
           else if(strcmp(field1, "UP") == 0) {
@@ -883,7 +883,7 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
             /* if(!set_bounds(lp, var, get_lowbo(lp, var), field4)) */
             if(!set_upbo(lp, var, field4))
               break;
-            set_semicont(lp, var, TRUE);
+            set_semicont(lp, var, FTRUE);
           }
           else if(strcmp(field1, "SI") == 0) {
             /* upper bound */
@@ -892,8 +892,8 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
             /* if(!set_bounds(lp, var, get_lowbo(lp, var), field4)) */
             if(!set_upbo(lp, var, field4))
               break;
-            set_int(lp, var, TRUE);
-            set_semicont(lp, var, TRUE);
+            set_int(lp, var, FTRUE);
+            set_semicont(lp, var, FTRUE);
           }
           else if(strcmp(field1, "LO") == 0) {
             /* lower bound */
@@ -920,20 +920,20 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
               break;
           }
           else if(strcmp(field1, "BV") == 0) { /* binary variable */
-            set_binary(lp, var, TRUE);
+            set_binary(lp, var, FTRUE);
           }
           /* AMPL bounds type UI and LI added by E.Imamura (CRIEPI)  */
           else if(strcmp(field1, "UI") == 0) { /* upper bound for integer variable */
             /* if(!set_bounds(lp, var, get_lowbo(lp, var), field4)) */
             if(!set_upbo(lp, var, field4))
               break;
-            set_int(lp, var, TRUE);
+            set_int(lp, var, FTRUE);
           }
           else if(strcmp(field1, "LI") == 0) { /* lower bound for integer variable - corrected by KE */
             /* if(!set_bounds(lp, var, field4, get_upbo(lp, var))) */
             if(!set_lowbo(lp, var, field4))
               break;
-            set_int(lp, var, TRUE);
+            set_int(lp, var, FTRUE);
           }
           else {
             report(lp, CRITICAL, "BOUND type %s on line %d is not supported",
@@ -1112,13 +1112,13 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
           else {
             char *field = (items == 3) ? field3 /* Native lp_solve and XPRESS formats */ : field2 /* CPLEX format */;
 
-            var = find_var(lp, field, FALSE);  /* Native lp_solve and XPRESS formats */
+            var = find_var(lp, field, FFALSE);  /* Native lp_solve and XPRESS formats */
             if(var < 0){ /* SOS on undefined var in COLUMNS section ... */
-              Column_ready = TRUE;
-              if (!addmpscolumn(lp, FALSE, typeMPS, &Column_ready, &count, Last_column, Last_columnno, field))
+              Column_ready = FTRUE;
+              if (!addmpscolumn(lp, FFALSE, typeMPS, &Column_ready, &count, Last_column, Last_columnno, field))
                 break;
-              Column_ready = TRUE;
-              var = find_var(lp, field, TRUE);
+              Column_ready = FTRUE;
+              var = find_var(lp, field, FTRUE);
             }
             if((var < 0) || (SOS < 1)) /* undefined var and could add ... */;
             else append_SOSrec(lp->SOS->sos_list[SOS-1], 1, &var, &field4);
@@ -1137,10 +1137,10 @@ MYBOOL __WINAPI MPS_readex(lprec **newlp, void *userhandle, read_modeldata_func 
     if((*OBJNAME) && (!OF_found)) {
       report(lp, IMPORTANT,
                   "Error: Objective function specified by OBJNAME card not found\n");
-      CompleteStatus = FALSE;
+      CompleteStatus = FFALSE;
     }
 
-    if(CompleteStatus == FALSE) {
+    if(CompleteStatus == FFALSE) {
       if (*newlp == NULL)
         delete_lp(lp);
     }
@@ -1299,8 +1299,8 @@ static void write_data(void *userhandle, write_modeldata_func write_modeldata, c
 
 MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_modeldata_func write_modeldata)
 {
-  int    i, j, jj, je, k, marker, putheader, ChangeSignObj = FALSE, *idx, *idx1;
-  MYBOOL ok = TRUE, names_used;
+  int    i, j, jj, je, k, marker, putheader, ChangeSignObj = FFALSE, *idx, *idx1;
+  MYBOOL ok = FTRUE, names_used;
   REAL   a, *val, *val1;
   char * (*MPSname)(char *name0, char *name);
   char numberbuffer[15];
@@ -1315,7 +1315,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
   }
   else {
     report(lp, IMPORTANT, "MPS_writefile: unrecognized MPS name type.\n");
-    return(FALSE);
+    return(FFALSE);
   }
 
   names_used = lp->names_used;
@@ -1328,12 +1328,12 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
           for(j = 1; (j < i) && (ok); j++)
     if((lp->col_name[j] != NULL) && (lp->col_name[j]->name != NULL) && (!is_splitvar(lp, j)))
       if(strncmp(lp->col_name[i]->name, lp->col_name[j]->name, 8) == 0)
-        ok = FALSE;
+        ok = FFALSE;
   }
 
   if(!ok) {
-    lp->names_used = FALSE;
-    ok = TRUE;
+    lp->names_used = FFALSE;
+    ok = FTRUE;
   }
 
   memset(numberbuffer, 0, sizeof(numberbuffer));
@@ -1373,8 +1373,8 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
     write_data(userhandle, write_modeldata, "%s\n", MPSname(name0, get_row_name(lp, i)));
   }
 
-  allocREAL(lp, &val, 1 + lp->rows, TRUE);
-  allocINT(lp, &idx, 1 + lp->rows, TRUE);
+  allocREAL(lp, &val, 1 + lp->rows, FTRUE);
+  allocINT(lp, &idx, 1 + lp->rows, FTRUE);
   write_data(userhandle, write_modeldata, "COLUMNS\n");
   for(i = 1; i <= lp->columns; i++) {
     if(!is_splitvar(lp, i)) {
@@ -1444,7 +1444,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
   if(k == 0)
     write_data(userhandle, write_modeldata, "\n");
 
-  putheader = TRUE;
+  putheader = FTRUE;
   for(k = 1, i = 1; i <= lp->rows; i++){
     a = 0;
     if((lp->orig_upbo[i] < lp->infinite) && (lp->orig_upbo[i] != 0.0))
@@ -1452,7 +1452,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
     if(a) {
       if(putheader) {
         write_data(userhandle, write_modeldata, "RANGES\n");
-        putheader = FALSE;
+        putheader = FFALSE;
       }
       a = unscaled_value(lp, a, i);
       k = 1 - k;
@@ -1469,7 +1469,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
   if(k == 0)
     write_data(userhandle, write_modeldata, "\n");
 
-  putheader = TRUE;
+  putheader = FTRUE;
   for(i = lp->rows + 1; i <= lp->sum; i++)
     if(!is_splitvar(lp, i - lp->rows)) {
       j = i - lp->rows;
@@ -1479,7 +1479,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
         a = unscaled_value(lp, a, i);
         if(putheader) {
           write_data(userhandle, write_modeldata, "BOUNDS\n");
-          putheader = FALSE;
+          putheader = FFALSE;
         }
         write_data(userhandle, write_modeldata, " FX BND       %s  %s\n",
                         MPSname(name0, get_col_name(lp, j)),
@@ -1488,7 +1488,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
       else if(is_binary(lp, j)) {
         if(putheader) {
           write_data(userhandle, write_modeldata, "BOUNDS\n");
-          putheader = FALSE;
+          putheader = FFALSE;
         }
         write_data(userhandle, write_modeldata, " BV BND       %s\n",
                         MPSname(name0, get_col_name(lp, j)));
@@ -1496,7 +1496,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
       else if(is_unbounded(lp, j)) {
         if(putheader) {
           write_data(userhandle, write_modeldata, "BOUNDS\n");
-          putheader = FALSE;
+          putheader = FFALSE;
         }
         write_data(userhandle, write_modeldata, " FR BND       %s\n",
                         MPSname(name0, get_col_name(lp, j)));
@@ -1507,7 +1507,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
           a = unscaled_value(lp, a, i);
           if(putheader) {
             write_data(userhandle, write_modeldata, "BOUNDS\n");
-            putheader = FALSE;
+            putheader = FFALSE;
           }
           if(lp->orig_lowbo[i] != -lp->infinite)
             write_data(userhandle, write_modeldata, " LO BND       %s  %s\n",
@@ -1524,7 +1524,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
             a = unscaled_value(lp, a, i);
           if(putheader) {
             write_data(userhandle, write_modeldata, "BOUNDS\n");
-            putheader = FALSE;
+            putheader = FFALSE;
           }
           if(is_semicont(lp, j)) {
             if(is_int(lp, j))
@@ -1545,13 +1545,13 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
     }
 
  /* Write optional SOS section */
-  putheader = TRUE;
+  putheader = FTRUE;
   for(i = 0; i < SOS_count(lp); i++) {
     SOSgroup *SOS = lp->SOS;
 
     if(putheader) {
       write_data(userhandle, write_modeldata, "SOS\n");
-      putheader = FALSE;
+      putheader = FFALSE;
     }
     write_data(userhandle, write_modeldata, " S%1d SOS       %s  %s\n",
                     SOS->sos_list[i]->type,
@@ -1574,7 +1574,7 @@ MYBOOL __WINAPI MPS_writefileex(lprec *lp, int typeMPS, void *userhandle, write_
 static int __WINAPI write_lpdata(void *userhandle, char *buf)
 {
   fputs(buf, (FILE *) userhandle);
-  return(TRUE);
+  return(FTRUE);
 }
 
 MYBOOL MPS_writefile(lprec *lp, int typeMPS, char *filename)
@@ -1682,7 +1682,7 @@ MYBOOL MPS_readBAS(lprec *lp, int typeMPS, char *filename, char *info)
     scan_line = scan_lineFREE;
   else {
     report(lp, IMPORTANT, "MPS_readBAS: unrecognized MPS line type.\n");
-    return(FALSE);
+    return(FFALSE);
   }
 
   ok = (MYBOOL) ((filename != NULL) && ((input = fopen(filename,"r")) != NULL));
@@ -1692,7 +1692,7 @@ MYBOOL MPS_readBAS(lprec *lp, int typeMPS, char *filename, char *info)
 
   /* Let's initialize line to all zero's */
   MEMCLEAR(line, BUFSIZ);
-  ok = FALSE;
+  ok = FFALSE;
   while(fgets(line, BUFSIZ - 1, input)) {
     Lineno++;
 
@@ -1723,7 +1723,7 @@ MYBOOL MPS_readBAS(lprec *lp, int typeMPS, char *filename, char *info)
       }
       else if(strcmp(tmp, "ENDATA") == 0) {
         report(lp, FULL, "Finished reading BAS file\n");
-        ok = TRUE;
+        ok = FTRUE;
         break;
       }
       else { /* line does not start with space and does not match above */
@@ -1738,10 +1738,10 @@ MYBOOL MPS_readBAS(lprec *lp, int typeMPS, char *filename, char *info)
         break;
       }
       /* find first variable index value */
-      in = MPS_getnameidx(lp, field2, FALSE);
+      in = MPS_getnameidx(lp, field2, FFALSE);
 #ifdef OldNameMatch
       if(in < 0)
-        in = MPS_getnameidx(lp, field2, TRUE);
+        in = MPS_getnameidx(lp, field2, FTRUE);
       else
         in += lp->rows;
 #endif
@@ -1752,10 +1752,10 @@ MYBOOL MPS_readBAS(lprec *lp, int typeMPS, char *filename, char *info)
       if(field1[0] == 'X') {
         /* find second variable index value */
         ib = in;
-        in = MPS_getnameidx(lp, field3, FALSE);
+        in = MPS_getnameidx(lp, field3, FFALSE);
 #ifdef OldNameMatch
         if(in < 0)
-          in = MPS_getnameidx(lp, field3, TRUE);
+          in = MPS_getnameidx(lp, field3, FTRUE);
         else
           in += lp->rows;
 #endif
@@ -1763,12 +1763,12 @@ MYBOOL MPS_readBAS(lprec *lp, int typeMPS, char *filename, char *info)
           break;
 
         lp->is_lower[in] = (MYBOOL) (field1[1] == 'L');
-        lp->is_basic[ib] = TRUE;
+        lp->is_basic[ib] = FTRUE;
       }
       else
         lp->is_lower[in] = (MYBOOL) (field1[0] == 'L');
 
-      lp->is_basic[in] = FALSE;
+      lp->is_basic[in] = FFALSE;
 
     }
   }
@@ -1801,7 +1801,7 @@ MYBOOL MPS_writeBAS(lprec *lp, int typeMPS, char *filename)
     MPSname = MPSnameFREE;
   else {
     report(lp, IMPORTANT, "MPS_writeBAS: unrecognized MPS name type.\n");
-    return(FALSE);
+    return(FFALSE);
   }
 
   /* Open the file for writing */

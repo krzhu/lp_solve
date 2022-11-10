@@ -67,7 +67,7 @@ STATIC MYBOOL stallMonitor_creepingObj(lprec *lp)
     return( (MYBOOL) (deltaOF < monitor->epsvalue) );
   }
   else
-    return( FALSE );
+    return( FFALSE );
 }
 
 STATIC MYBOOL stallMonitor_shortSteps(lprec *lp)
@@ -78,10 +78,10 @@ STATIC MYBOOL stallMonitor_shortSteps(lprec *lp)
     REAL deltaOF = MAX(1, (monitor->idxstep[monitor->currentstep] -
                            monitor->idxstep[monitor->startstep])) / monitor->countstep;
     deltaOF = pow(deltaOF*OBJ_STEPS, 0.66);
-    return( (MYBOOL) (deltaOF > monitor->limitstall[TRUE]) );
+    return( (MYBOOL) (deltaOF > monitor->limitstall[FTRUE]) );
   }
   else
-    return( FALSE );
+    return( FFALSE );
 }
 
 STATIC void stallMonitor_reset(lprec *lp)
@@ -103,11 +103,11 @@ STATIC MYBOOL stallMonitor_create(lprec *lp, MYBOOL isdual, char *funcname)
 {
   OBJmonrec *monitor = NULL;
   if(lp->monitor != NULL)
-    return( FALSE );
+    return( FFALSE );
 
   monitor = (OBJmonrec *) calloc(sizeof(*monitor), 1);
   if(monitor == NULL)
-    return( FALSE );
+    return( FFALSE );
 
   monitor->lp = lp;
   strcpy(monitor->spxfunc, funcname);
@@ -116,16 +116,16 @@ STATIC MYBOOL stallMonitor_create(lprec *lp, MYBOOL isdual, char *funcname)
   monitor->oldpivstrategy = lp->piv_strategy;
   monitor->oldpivrule = get_piv_rule(lp);
   if(MAX_STALLCOUNT <= 1)
-    monitor->limitstall[FALSE] = 0;
+    monitor->limitstall[FFALSE] = 0;
   else
-    monitor->limitstall[FALSE] = MAX(MAX_STALLCOUNT,
+    monitor->limitstall[FFALSE] = MAX(MAX_STALLCOUNT,
                                      (int) pow((REAL) (lp->rows+lp->columns)/2, 0.667));
 #if 1
-  monitor->limitstall[FALSE] *= 2+2;  /* Expand degeneracy/stalling tolerance range */
+  monitor->limitstall[FFALSE] *= 2+2;  /* Expand degeneracy/stalling tolerance range */
 #endif
-  monitor->limitstall[TRUE] = monitor->limitstall[FALSE];
+  monitor->limitstall[FTRUE] = monitor->limitstall[FFALSE];
   if(monitor->oldpivrule == PRICER_DEVEX) /* Increase tolerance since primal Steepest Edge is expensive */
-    monitor->limitstall[TRUE] *= 2;
+    monitor->limitstall[FTRUE] *= 2;
   if(MAX_RULESWITCH <= 0)
     monitor->limitruleswitches = MAXINT32;
   else
@@ -135,14 +135,14 @@ STATIC MYBOOL stallMonitor_create(lprec *lp, MYBOOL isdual, char *funcname)
   lp->monitor = monitor;
   stallMonitor_reset(lp);
   lp->suminfeas = lp->infinite;
-  return( TRUE );
+  return( FTRUE );
 }
 
 STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
                                  MYBOOL minit, MYBOOL approved, MYBOOL *forceoutEQ)
 {
   OBJmonrec *monitor = lp->monitor;
-  MYBOOL    isStalled, isCreeping, acceptance = TRUE;
+  MYBOOL    isStalled, isCreeping, acceptance = FTRUE;
   int       altrule,
 #ifdef Paranoia
          msglevel = NORMAL;
@@ -152,7 +152,7 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
   REAL   deltaobj = lp->suminfeas;
 
   /* Accept unconditionally if this is the first or second call */
-  monitor->active = FALSE;
+  monitor->active = FFALSE;
   if(monitor->Icount <= 1) {
     if(monitor->Icount == 1) {
       monitor->prevobj = lp->rhs[0];
@@ -195,7 +195,7 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
 
     /* Check if we should force "major" pivoting, i.e. no bound flips;
       this is activated when we see the feasibility deteriorate */
-/*    if(!isStalled && (testvalue > 0) && (TRUE || is_action(lp->anti_degen, ANTIDEGEN_BOUNDFLIP))) */
+/*    if(!isStalled && (testvalue > 0) && (FTRUE || is_action(lp->anti_degen, ANTIDEGEN_BOUNDFLIP))) */
 #if !defined _PRICE_NOBOUNDFLIP
     if(!isStalled && (testvalue > 0) && is_action(lp->anti_degen, ANTIDEGEN_BOUNDFLIP))
       acceptance = AUTOMATIC;
@@ -211,7 +211,7 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
 #endif
 
 #if 1
-  isCreeping = FALSE;
+  isCreeping = FFALSE;
 #else
   isCreeping |= stallMonitor_creepingObj(lp);
 /*  isCreeping |= stallMonitor_shortSteps(lp); */
@@ -241,11 +241,11 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
             (monitor->Ncycle > monitor->limitstall[monitor->isdual]) ||   /* KE empirical value */
             ((monitor->Ccycle == rownr) && (monitor->Rcycle == colnr))) {   /* Obvious cycling */
 
-      monitor->active = TRUE;
+      monitor->active = FTRUE;
 
       /* Try to force out equality slacks to combat degeneracy */
-      if((lp->fixedvars > 0) && (*forceoutEQ != TRUE)) {
-        *forceoutEQ = TRUE;
+      if((lp->fixedvars > 0) && (*forceoutEQ != FTRUE)) {
+        *forceoutEQ = FTRUE;
         goto Proceed;
       }
 
@@ -256,7 +256,7 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
         lp->spx_status = DEGENERATE;
         report(lp, msglevel, "%s: Stalling at iter %10.0f; no alternative strategy left.\n",
                              monitor->spxfunc, (double) get_total_iter(lp));
-        acceptance = FALSE;
+        acceptance = FFALSE;
         return( acceptance );
       }
 
@@ -293,7 +293,7 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
       else {
         report(lp, msglevel, "%s: Stalling at iter %10.0f; proceed to bound relaxation.\n",
                              monitor->spxfunc, (double) get_total_iter(lp));
-        acceptance = FALSE;
+        acceptance = FFALSE;
         lp->spx_status = DEGENERATE;
         return( acceptance );
       }
@@ -405,11 +405,11 @@ STATIC MYBOOL add_artificial(lprec *lp, int forrownr, REAL *nzarray, int *idxarr
 
      /* Create temporary sparse array storage */
       if(nzarray == NULL)
-        allocREAL(lp, &avalue, 2, FALSE);
+        allocREAL(lp, &avalue, 2, FFALSE);
       else
         avalue = nzarray;
       if(idxarray == NULL)
-        allocINT(lp, &rownr, 2, FALSE);
+        allocINT(lp, &rownr, 2, FFALSE);
       else
         rownr = idxarray;
 
@@ -437,7 +437,7 @@ STATIC MYBOOL add_artificial(lprec *lp, int forrownr, REAL *nzarray, int *idxarr
     else {
       report(lp, CRITICAL, "add_artificial: Could not find replacement basis variable for row %d\n",
                            forrownr);
-      lp->basis_valid = FALSE;
+      lp->basis_valid = FFALSE;
     }
 
   }
@@ -515,7 +515,7 @@ STATIC void eliminate_artificials(lprec *lp, REAL *prow)
     rownr = get_artificialRow(lp, j);
     colnr = find_rowReplacement(lp, rownr, prow, NULL);
 #if 0
-    performiteration(lp, rownr, colnr, 0.0, TRUE, FALSE, prow, NULL,
+    performiteration(lp, rownr, colnr, 0.0, FTRUE, FFALSE, prow, NULL,
                                                           NULL, NULL, NULL);
 #else
     set_basisvar(lp, rownr, colnr);
@@ -555,17 +555,17 @@ STATIC void clear_artificials(lprec *lp)
   lp->P1extraDim = 0;
   if(n > 0) {
     set_action(&lp->spx_action, ACTION_REINVERT);
-    lp->basis_valid = TRUE;
+    lp->basis_valid = FTRUE;
   }
 }
 
 
 STATIC int primloop(lprec *lp, MYBOOL primalfeasible, REAL primaloffset)
 {
-  MYBOOL primal = TRUE, bfpfinal = FALSE, changedphase = FALSE, forceoutEQ = AUTOMATIC,
+  MYBOOL primal = FTRUE, bfpfinal = FFALSE, changedphase = FFALSE, forceoutEQ = AUTOMATIC,
          primalphase1, pricerCanChange, minit, stallaccept, pendingunbounded;
   int    i, j, k, colnr = 0, rownr = 0, lastnr = 0,
-         candidatecount = 0, minitcount = 0, ok = TRUE;
+         candidatecount = 0, minitcount = 0, ok = FTRUE;
   LREAL  theta = 0.0;
   REAL   epsvalue, xviolated = 0.0, cviolated = 0.0,
          *prow = NULL, *pcol = NULL,
@@ -620,7 +620,7 @@ STATIC int primloop(lprec *lp, MYBOOL primalfeasible, REAL primaloffset)
       report(lp, DETAILED, "P1extraDim count = %d\n", lp->P1extraDim);
 
     simplexPricer(lp, (MYBOOL)!primal);
-    invert(lp, INITSOL_USEZERO, TRUE);
+    invert(lp, INITSOL_USEZERO, FTRUE);
   }
   else {
     lp->simplex_mode = SIMPLEX_Phase2_PRIMAL;
@@ -628,13 +628,13 @@ STATIC int primloop(lprec *lp, MYBOOL primalfeasible, REAL primaloffset)
   }
 
   /* Create work arrays and optionally the multiple pricing structure */
-  ok = allocREAL(lp, &(lp->bsolveVal), lp->rows + 1, FALSE) &&
-       allocREAL(lp, &prow, lp->sum + 1, TRUE) &&
-       allocREAL(lp, &pcol, lp->rows + 1, TRUE);
+  ok = allocREAL(lp, &(lp->bsolveVal), lp->rows + 1, FFALSE) &&
+       allocREAL(lp, &prow, lp->sum + 1, FTRUE) &&
+       allocREAL(lp, &pcol, lp->rows + 1, FTRUE);
   if(is_piv_mode(lp, PRICE_MULTIPLE) && (lp->multiblockdiv > 1)) {
-    lp->multivars = multi_create(lp, FALSE);
+    lp->multivars = multi_create(lp, FFALSE);
     ok &= (lp->multivars != NULL) &&
-          multi_resize(lp->multivars, lp->sum / lp->multiblockdiv, 2, FALSE, TRUE);
+          multi_resize(lp->multivars, lp->sum / lp->multiblockdiv, 2, FFALSE, FTRUE);
   }
   if(!ok)
     goto Finish;
@@ -643,9 +643,9 @@ STATIC int primloop(lprec *lp, MYBOOL primalfeasible, REAL primaloffset)
   lp->spx_status = RUNNING;
   minit = ITERATE_MAJORMAJOR;
   epsvalue = lp->epspivot;
-  pendingunbounded = FALSE;
+  pendingunbounded = FFALSE;
 
-  ok = stallMonitor_create(lp, FALSE, "primloop");
+  ok = stallMonitor_create(lp, FFALSE, "primloop");
   if(!ok)
     goto Finish;
 
@@ -667,14 +667,14 @@ STATIC int primloop(lprec *lp, MYBOOL primalfeasible, REAL primaloffset)
    /* Find best column to enter the basis */
 RetryCol:
 #if 0
-    if(verify_solution(lp, FALSE, "spx_loop") > 0)
+    if(verify_solution(lp, FFALSE, "spx_loop") > 0)
       i = 1; /* This is just a debug trap */
 #endif
     if(!changedphase) {
       i = 0;
       do {
         i++;
-        colnr = colprim(lp, drow, nzdrow, (MYBOOL) (minit == ITERATE_MINORRETRY), i, &candidatecount, TRUE, &xviolated);
+        colnr = colprim(lp, drow, nzdrow, (MYBOOL) (minit == ITERATE_MINORRETRY), i, &candidatecount, FTRUE, &xviolated);
       } while ((colnr == 0) && (i < partial_countBlocks(lp, (MYBOOL) !primal)) &&
                                 partial_blockStep(lp, (MYBOOL) !primal));
 
@@ -686,7 +686,7 @@ RetryCol:
 
       /* See if accuracy check during compute_reducedcosts flagged refactorization */
       if(is_action(lp->spx_action, ACTION_REINVERT))
-        bfpfinal = TRUE;
+        bfpfinal = FTRUE;
 
     }
 
@@ -700,15 +700,15 @@ RetryCol:
       colnr = lp->rejectpivot[1];
       rownr = 0;
       lp->rejectpivot[0] = 0;
-      ok = FALSE;
+      ok = FFALSE;
       break;
     }
 #endif
 
     /* Check if we found an entering variable (indicating that we are still dual infeasible) */
     if(colnr > 0) {
-      changedphase = FALSE;
-      fsolve(lp, colnr, pcol, NULL, lp->epsmachine, 1.0, TRUE);  /* Solve entering column for Pi */
+      changedphase = FFALSE;
+      fsolve(lp, colnr, pcol, NULL, lp->epsmachine, 1.0, FTRUE);  /* Solve entering column for Pi */
 
       /* Do special anti-degeneracy column selection, if specified */
       if(is_anti_degen(lp, ANTIDEGEN_COLUMNCHECK) && !check_degeneracy(lp, pcol, NULL)) {
@@ -748,7 +748,7 @@ RetryCol:
         rownr = findAnti_artificial(lp, colnr);
 
       if(rownr > 0) {
-        pendingunbounded = FALSE;
+        pendingunbounded = FFALSE;
         lp->rejectpivot[0] = 0;
         set_action(&lp->spx_action, ACTION_ITERATE);
         if(!lp->obj_in_basis)  /* We must manually copy the reduced cost for RHS update */
@@ -772,8 +772,8 @@ RetryCol:
 #endif
         /* Check that we are not having numerical problems */
         if(!refactRecent(lp) && !pendingunbounded) {
-          bfpfinal = TRUE;
-          pendingunbounded = TRUE;
+          bfpfinal = FTRUE;
+          pendingunbounded = FTRUE;
           set_action(&lp->spx_action, ACTION_REINVERT);
         }
 
@@ -801,8 +801,8 @@ Optimality:
             if((lp->usermessage != NULL) && (lp->msgmask & MSG_LPFEASIBLE))
               lp->usermessage(lp, lp->msghandle, MSG_LPFEASIBLE);
           }
-          changedphase = FALSE;
-          primalfeasible = TRUE;
+          changedphase = FFALSE;
+          primalfeasible = FTRUE;
           lp->simplex_mode = SIMPLEX_Phase2_PRIMAL;
           set_OF_p1extra(lp, 0.0);
 
@@ -830,7 +830,7 @@ Optimality:
 
                 /* Delete row before column due to basis "compensation logic" */
                 if(lp->is_basic[k]) {
-                  lp->is_basic[lp->rows+j] = FALSE;
+                  lp->is_basic[lp->rows+j] = FFALSE;
                   del_constraint(lp, k);
                 }
                 else
@@ -838,7 +838,7 @@ Optimality:
                 del_column(lp, j);
                 lp->P1extraDim--;
               }
-              lp->basis_valid = TRUE;
+              lp->basis_valid = FTRUE;
             }
            /* Otherwise we drive out the artificials by elimination pivoting */
             else
@@ -852,7 +852,7 @@ Optimality:
 
           /* We must refactorize since the OF changes from phase 1 to phase 2 */
           set_action(&lp->spx_action, ACTION_REINVERT);
-          bfpfinal = TRUE;
+          bfpfinal = FTRUE;
         }
 
         /* We are infeasible in phase 1 */
@@ -874,7 +874,7 @@ Optimality:
          is not necessary after the relaxed problem has been solved satisfactorily. */
       if((lp->bb_level <= 1) || (lp->improve & IMPROVE_BBSIMPLEX) /* || (lp->bb_rule & NODE_RCOSTFIXING) */) { /* NODE_RCOSTFIXING fix */
         set_action(&lp->piv_strategy, PRICE_FORCEFULL);
-          i = rowdual(lp, lp->rhs, FALSE, FALSE, NULL);
+          i = rowdual(lp, lp->rhs, FFALSE, FFALSE, NULL);
         clear_action(&lp->piv_strategy, PRICE_FORCEFULL);
         if(i > 0) {
           lp->spx_status = LOSTFEAS;
@@ -929,7 +929,7 @@ Optimality:
           lp->P1extraDim++;
         if(lp->P1extraDim == 0) {
           colnr = 0;
-          changedphase = TRUE;
+          changedphase = FTRUE;
           stallMonitor_reset(lp);
         }
       }
@@ -943,7 +943,7 @@ Optimality:
 #endif
       if(!invert(lp, INITSOL_USEZERO, bfpfinal))
         lp->spx_status = SINGULAR_BASIS;
-      bfpfinal = FALSE;
+      bfpfinal = FFALSE;
     }
   }
 
@@ -954,7 +954,7 @@ Optimality:
     clear_artificials(lp);
     if(lp->spx_status != OPTIMAL)
       restore_basis(lp);
-    i = invert(lp, INITSOL_USEZERO, TRUE);
+    i = invert(lp, INITSOL_USEZERO, FTRUE);
   }
 #ifdef Paranoia
   if(!verify_basis(lp))
@@ -983,15 +983,15 @@ Finish:
 
 STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL dualoffset)
 {
-  MYBOOL primal = FALSE, inP1extra, dualphase1 = FALSE, changedphase = TRUE,
+  MYBOOL primal = FFALSE, inP1extra, dualphase1 = FFALSE, changedphase = FTRUE,
          pricerCanChange, minit, stallaccept, longsteps,
-         forceoutEQ = FALSE, bfpfinal = FALSE;
+         forceoutEQ = FFALSE, bfpfinal = FFALSE;
   int    i, colnr = 0, rownr = 0, lastnr = 0,
          candidatecount = 0, minitcount = 0,
 #ifdef FixInaccurateDualMinit
          minitcolnr = 0,
 #endif
-         ok = TRUE;
+         ok = FTRUE;
   int    *boundswaps = NULL;
   LREAL  theta = 0.0;
   REAL   epsvalue, xviolated, cviolated,
@@ -1005,9 +1005,9 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
                          my_boolstr(dualfeasible));
 
   /* Allocate work arrays */
-  ok = allocREAL(lp, &prow,   lp->sum + 1,  TRUE) &&
-       allocINT (lp, &nzprow, lp->sum + 1,  FALSE) &&
-       allocREAL(lp, &pcol,   lp->rows + 1, TRUE);
+  ok = allocREAL(lp, &prow,   lp->sum + 1,  FTRUE) &&
+       allocINT (lp, &nzprow, lp->sum + 1,  FFALSE) &&
+       allocREAL(lp, &pcol,   lp->rows + 1, FTRUE);
   if(!ok)
     goto Finish;
 
@@ -1020,35 +1020,35 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
   if(inP1extra) {
     set_OF_p1extra(lp, dualoffset);
     simplexPricer(lp, (MYBOOL)!primal);
-    invert(lp, INITSOL_USEZERO, TRUE);
+    invert(lp, INITSOL_USEZERO, FTRUE);
   }
   else
     restartPricer(lp, (MYBOOL)!primal);
 
   /* Prepare dual long-step structures */
 #if 0
-  longsteps = TRUE;
+  longsteps = FTRUE;
 #elif 0
   longsteps = (MYBOOL) ((MIP_count(lp) > 0) && (lp->bb_level > 1));
 #elif 0
   longsteps = (MYBOOL) ((MIP_count(lp) > 0) && (lp->solutioncount >= 1));
 #else
-  longsteps = FALSE;
+  longsteps = FFALSE;
 #endif
 #ifdef UseLongStepDualPhase1
   longsteps = !dualfeasible && (MYBOOL) (dualinfeasibles != NULL);
 #endif
 
   if(longsteps) {
-    lp->longsteps = multi_create(lp, TRUE);
+    lp->longsteps = multi_create(lp, FTRUE);
     ok = (lp->longsteps != NULL) &&
-         multi_resize(lp->longsteps, MIN(lp->boundedvars+2, 11), 1, TRUE, TRUE);
+         multi_resize(lp->longsteps, MIN(lp->boundedvars+2, 11), 1, FTRUE, FTRUE);
     if(!ok)
       goto Finish;
 #ifdef UseLongStepPruning
-    lp->longsteps->objcheck = TRUE;
+    lp->longsteps->objcheck = FTRUE;
 #endif
-    boundswaps = multi_indexSet(lp->longsteps, FALSE);
+    boundswaps = multi_indexSet(lp->longsteps, FFALSE);
   }
 
   /* Do regular dual simplex variable initializations */
@@ -1056,7 +1056,7 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
   minit = ITERATE_MAJORMAJOR;
   epsvalue = lp->epspivot;
 
-  ok = stallMonitor_create(lp, TRUE, "dualloop");
+  ok = stallMonitor_create(lp, FTRUE, "dualloop");
   if(!ok)
     goto Finish;
 
@@ -1068,25 +1068,25 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
 
   /* Check if we have equality slacks in the basis and we should try to
      drive them out in order to reduce chance of degeneracy in Phase 1.
-     forceoutEQ = FALSE :    Only eliminate assured "good" violated
+     forceoutEQ = FFALSE :    Only eliminate assured "good" violated
                              equality constraint slacks
                   AUTOMATIC: Seek more elimination of equality constraint
                              slacks (but not as aggressive as the rule
                              used in lp_solve v4.0 and earlier)
-                  TRUE:      Force remaining equality slacks out of the
+                  FTRUE:      Force remaining equality slacks out of the
                              basis */
   if(dualphase1 || inP1extra ||
      ((lp->fixedvars > 0) && is_anti_degen(lp, ANTIDEGEN_FIXEDVARS))) {
     forceoutEQ = AUTOMATIC;
   }
 #if 1
-  if(is_anti_degen(lp, ANTIDEGEN_DYNAMIC) && (bin_count(lp, TRUE)*2 > lp->columns)) {
+  if(is_anti_degen(lp, ANTIDEGEN_DYNAMIC) && (bin_count(lp, FTRUE)*2 > lp->columns)) {
     switch (forceoutEQ) {
-      case FALSE:     forceoutEQ = AUTOMATIC;
+      case FFALSE:     forceoutEQ = AUTOMATIC;
                       break;
- /*     case AUTOMATIC: forceoutEQ = TRUE;
+ /*     case AUTOMATIC: forceoutEQ = FTRUE;
                       break;
-      default:        forceoutEQ = TRUE; */
+      default:        forceoutEQ = FTRUE; */
     }
   }
 #endif
@@ -1100,7 +1100,7 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
       break;
 
     /* Store current LP index for reference at next iteration */
-    changedphase = FALSE;
+    changedphase = FFALSE;
 
     /* Compute (pure) dual phase1 offsets / reduced costs if appropriate */
     dualphase1 &= (MYBOOL) (lp->simplex_mode == SIMPLEX_Phase1_DUAL);
@@ -1122,7 +1122,7 @@ RetryRow:
       i = 0;
       do {
         i++;
-        rownr = rowdual(lp, my_if(dualphase1, pcol, NULL), forceoutEQ, TRUE, &xviolated);
+        rownr = rowdual(lp, my_if(dualphase1, pcol, NULL), forceoutEQ, FTRUE, &xviolated);
       } while ((rownr == 0) && (i < partial_countBlocks(lp, (MYBOOL) !primal)) &&
                                 partial_blockStep(lp, (MYBOOL) !primal));
     }
@@ -1137,7 +1137,7 @@ RetryRow:
       rownr = lp->rejectpivot[1];
       colnr = 0;
       lp->rejectpivot[0] = 0;
-      ok = FALSE;
+      ok = FFALSE;
       break;
     }
 #endif
@@ -1180,7 +1180,7 @@ RetryRow:
           break;
         }
 #endif
-        fsolve(lp, colnr, pcol, workINT, lp->epsmachine, 1.0, TRUE);
+        fsolve(lp, colnr, pcol, workINT, lp->epsmachine, 1.0, FTRUE);
 
 #ifdef FixInaccurateDualMinit
        /* Prevent bound flip-flops during minor iterations; used to detect
@@ -1196,13 +1196,13 @@ RetryRow:
           if(!refactRecent(lp)) {
             report(lp, DETAILED, "...trying to recover by refactorizing basis.\n");
             set_action(&lp->spx_action, ACTION_REINVERT);
-            bfpfinal = FALSE;
+            bfpfinal = FFALSE;
           }
           else {
             if(lp->bb_totalnodes == 0)
               report(lp, DETAILED, "...cannot recover by refactorizing basis.\n");
             lp->spx_status = NUMFAILURE;
-            ok = FALSE;
+            ok = FFALSE;
           }
         }
         else {
@@ -1218,7 +1218,7 @@ RetryRow:
              (my_reldiff(fabs(theta), fabs(prow[colnr])) >
               lp->epspivot*10.0*log(2.0+50.0*lp->rows))) {  /* This is my kludge - KE */
             set_action(&lp->spx_action, ACTION_REINVERT);
-            bfpfinal = TRUE;
+            bfpfinal = FTRUE;
 #ifdef IncreasePivotOnReducedAccuracy
             lp->epspivot = MIN(1.0e-4, lp->epspivot*2.0);
 #endif
@@ -1234,7 +1234,7 @@ RetryRow:
       /* Force reinvertion and try another row if we did not find a bound-violated leaving column */
       else if(!refactRecent(lp) && (minit != ITERATE_MAJORMAJOR) && (colnr != minitcolnr)) {
         minitcolnr = colnr;
-        i = invert(lp, INITSOL_USEZERO, TRUE);
+        i = invert(lp, INITSOL_USEZERO, FTRUE);
         if((lp->spx_status == USERABORT) || (lp->spx_status == TIMEOUT))
           break;
         else if(!i) {
@@ -1257,7 +1257,7 @@ RetryRow:
         /* As a first option, try to recover from any numerical trouble by refactorizing */
         if(!refactRecent(lp)) {
           set_action(&lp->spx_action, ACTION_REINVERT);
-          bfpfinal = TRUE;
+          bfpfinal = FTRUE;
         }
 
 #ifdef dual_UseRejectionList
@@ -1277,7 +1277,7 @@ RetryRow:
           if((lp->spx_trace && (lp->bb_totalnodes == 0)) ||
              (lp->bb_trace && (lp->bb_totalnodes > 0)))
             report(lp, DETAILED, "dualloop: Model lost dual feasibility.\n");
-          ok = FALSE;
+          ok = FFALSE;
           break;
         }
 
@@ -1297,7 +1297,7 @@ RetryRow:
                (lp->bb_trace && (lp->bb_totalnodes > 0)))
             report(lp, DETAILED, "The model is primal infeasible.\n");
           }
-          ok = FALSE;
+          ok = FFALSE;
           break;
         }
       }
@@ -1306,13 +1306,13 @@ RetryRow:
     /* Make sure that we enter the primal simplex with a high quality solution */
     else if(inP1extra && !refactRecent(lp) && is_action(lp->improve, IMPROVE_INVERSE)) {
        set_action(&lp->spx_action, ACTION_REINVERT);
-       bfpfinal = TRUE;
+       bfpfinal = FTRUE;
     }
 
     /* High quality solution with no leaving candidates available ... */
     else {
 
-      bfpfinal = TRUE;
+      bfpfinal = FTRUE;
 
 #ifdef dual_RemoveBasicFixedVars
       /* See if we should try to eliminate basic fixed variables;
@@ -1322,7 +1322,7 @@ RetryRow:
                              lp->fixedvars, (double) get_total_iter(lp));
         rownr = 0;
         while(lp->fixedvars > 0) {
-          rownr = findBasicFixedvar(lp, rownr, TRUE);
+          rownr = findBasicFixedvar(lp, rownr, FTRUE);
           if(rownr == 0) {
             colnr = 0;
             break;
@@ -1330,7 +1330,7 @@ RetryRow:
           colnr = find_rowReplacement(lp, rownr, prow, nzprow);
           if(colnr > 0) {
             theta = 0;
-            performiteration(lp, rownr, colnr, theta, TRUE, FALSE, prow, NULL,
+            performiteration(lp, rownr, colnr, theta, FTRUE, FFALSE, prow, NULL,
                                                             NULL, NULL, NULL);
             lp->fixedvars--;
           }
@@ -1348,11 +1348,11 @@ RetryRow:
             report(lp, DETAILED, "The model is primal infeasible and dual unbounded.\n");
         }
         set_OF_p1extra(lp, 0);
-        inP1extra = FALSE;
+        inP1extra = FFALSE;
         set_action(&lp->spx_action, ACTION_REINVERT);
         lp->spx_status = INFEASIBLE;
         lp->simplex_mode = SIMPLEX_UNDEFINED;
-        ok = FALSE;
+        ok = FFALSE;
       }
 
       /* Check if we are FEASIBLE (and possibly also optimal) for the case that the
@@ -1368,7 +1368,7 @@ RetryRow:
             lp->usermessage(lp, lp->msghandle, MSG_LPFEASIBLE);
         }
         set_OF_p1extra(lp, 0);
-        inP1extra = FALSE;
+        inP1extra = FFALSE;
         set_action(&lp->spx_action, ACTION_REINVERT);
 
 #if 1
@@ -1376,7 +1376,7 @@ RetryRow:
         if((lp->simplex_strategy & SIMPLEX_DUAL_PRIMAL) && (lp->fixedvars == 0))
           lp->spx_status = SWITCH_TO_PRIMAL;
 #endif
-        changedphase = TRUE;
+        changedphase = FTRUE;
 
       }
 
@@ -1388,8 +1388,8 @@ RetryRow:
         /* Check if we still have equality slacks stuck in the basis; drive them out? */
         if((lp->fixedvars > 0) && (lp->bb_totalnodes == 0)) {
 #ifdef dual_Phase1PriceEqualities
-          if(forceoutEQ != TRUE) {
-            forceoutEQ = TRUE;
+          if(forceoutEQ != FTRUE) {
+            forceoutEQ = FTRUE;
             goto RetryRow;
           }
 #endif
@@ -1406,7 +1406,7 @@ RetryRow:
         colnr = 0;
         if((dualoffset != 0) || (lp->bb_level <= 1) || (lp->improve & IMPROVE_BBSIMPLEX) || (lp->bb_rule & NODE_RCOSTFIXING)) { /* NODE_RCOSTFIXING fix */
           set_action(&lp->piv_strategy, PRICE_FORCEFULL);
-            colnr = colprim(lp, drow, nzdrow, FALSE, 1, &candidatecount, FALSE, NULL);
+            colnr = colprim(lp, drow, nzdrow, FFALSE, 1, &candidatecount, FFALSE, NULL);
           clear_action(&lp->piv_strategy, PRICE_FORCEFULL);
           if((dualoffset == 0) && (colnr > 0)) {
             lp->spx_status = LOSTFEAS;
@@ -1456,7 +1456,7 @@ RetryRow:
       if(!lp->is_strongbranch && (lp->solutioncount >= 1) && !lp->spx_perturbed && !inP1extra &&
           bb_better(lp, OF_WORKING, OF_TEST_WE)) {
         lp->spx_status = FATHOMED;
-        ok = FALSE;
+        ok = FFALSE;
         break;
       }
 
@@ -1467,8 +1467,8 @@ RetryRow:
       if(longsteps && dualphase1 && !inP1extra) {
         dualfeasible = isDualFeasible(lp, lp->epsprimal, NULL, dualinfeasibles, NULL);
         if(dualfeasible) {
-          dualphase1 = FALSE;
-          changedphase = TRUE;
+          dualphase1 = FFALSE;
+          changedphase = FTRUE;
           lp->simplex_mode = SIMPLEX_Phase2_DUAL;
         }
       }
@@ -1492,7 +1492,7 @@ RetryRow:
           if(!isDualFeasible(lp, lp->epsdual, &colnr, NULL, NULL)) {
 #else
           set_action(&lp->piv_strategy, PRICE_FORCEFULL);
-            colnr = colprim(lp, drow, nzdrow, FALSE, 1, &candidatecount, FALSE, NULL);
+            colnr = colprim(lp, drow, nzdrow, FFALSE, 1, &candidatecount, FFALSE, NULL);
           clear_action(&lp->piv_strategy, PRICE_FORCEFULL);
           if(colnr > 0) {
 #endif
@@ -1502,7 +1502,7 @@ RetryRow:
         }
 #endif
 
-        bfpfinal = FALSE;
+        bfpfinal = FFALSE;
 #ifdef ResetMinitOnReinvert
         minit = ITERATE_MAJORMAJOR;
 #endif
@@ -1536,7 +1536,7 @@ STATIC int spx_run(lprec *lp, MYBOOL validInvB)
   set_OF_p1extra(lp, 0);
   singular_count  = 0;
   lost_feas_count = 0;
-  lost_feas_state = FALSE;
+  lost_feas_state = FFALSE;
   lp->simplex_mode = SIMPLEX_DYNAMIC;
 
   /* Compute the number of fixed basic and bounded variables (used in long duals) */
@@ -1554,7 +1554,7 @@ STATIC int spx_run(lprec *lp, MYBOOL validInvB)
       lp->boundedvars++;
   }
 #ifdef UseLongStepDualPhase1
-  allocINT(lp, &infeasibles, lp->columns + 1, FALSE);
+  allocINT(lp, &infeasibles, lp->columns + 1, FFALSE);
   infeasibles[0] = 0;
 #endif
 
@@ -1566,7 +1566,7 @@ STATIC int spx_run(lprec *lp, MYBOOL validInvB)
       recompute_solution(lp, INITSOL_SHIFTZERO);
     else {
       i = my_if(is_action(lp->spx_action, ACTION_REBASE), INITSOL_SHIFTZERO, INITSOL_USEZERO);
-      invert(lp, (MYBOOL) i, TRUE);
+      invert(lp, (MYBOOL) i, FTRUE);
     }
   }
   else if(is_action(lp->spx_action, ACTION_REBASE))
@@ -1613,7 +1613,7 @@ STATIC int spx_run(lprec *lp, MYBOOL validInvB)
       else
         primloop(lp, primalfeasible, 0.0);
       if(lp->spx_status == SWITCH_TO_DUAL)
-        dualloop(lp, TRUE, NULL, 0.0);
+        dualloop(lp, FTRUE, NULL, 0.0);
     }
     else {
       if(!lost_feas_state && primalfeasible && ((lp->simplex_strategy & SIMPLEX_Phase2_PRIMAL) > 0))
@@ -1621,7 +1621,7 @@ STATIC int spx_run(lprec *lp, MYBOOL validInvB)
       else
         dualloop(lp, dualfeasible, infeasibles, dualoffset);
       if(lp->spx_status == SWITCH_TO_PRIMAL)
-        primloop(lp, TRUE, 0.0);
+        primloop(lp, FTRUE, 0.0);
     }
 
     /* Check for simplex outcomes that always involve breaking out of the loop;
@@ -1649,7 +1649,7 @@ STATIC int spx_run(lprec *lp, MYBOOL validInvB)
 
     /* Check for outcomes that may involve trying another simplex loop */
     if(lp->spx_status == SINGULAR_BASIS) {
-      lost_feas_state = FALSE;
+      lost_feas_state = FFALSE;
       singular_count++;
       if(singular_count >= DEF_MAXSINGULARITIES) {
         report(lp, IMPORTANT, "spx_run: Failure due to too many singular bases.\n");
@@ -1713,7 +1713,7 @@ lprec *make_lag(lprec *lpserver)
     for(i = 1; i <= lpserver->columns; i++) {
       set_mat(hlp, 0, i, get_mat(lpserver, 0, i));
       if(is_binary(lpserver, i))
-        set_binary(hlp, i, TRUE);
+        set_binary(hlp, i, FTRUE);
       else {
         set_int(hlp, i, is_int(lpserver, i));
         set_bounds(hlp, i, get_lowbo(lpserver, i), get_upbo(lpserver, i));
@@ -1721,7 +1721,7 @@ lprec *make_lag(lprec *lpserver)
     }
     /* Then fill data for the Lagrangean constraints */
     hlp->matL = lpserver->matA;
-    inc_lag_space(hlp, lpserver->rows, TRUE);
+    inc_lag_space(hlp, lpserver->rows, FTRUE);
     ret = get_ptr_sensitivity_rhs(hlp, &duals, NULL, NULL);
     for(i = 1; i <= lpserver->rows; i++) {
       hlp->lag_con_type[i] = get_constr_type(lpserver, i);
@@ -1744,7 +1744,7 @@ STATIC int heuristics(lprec *lp, int mode)
 
   status = RUNNING;
   lp->bb_limitOF = my_chsign(is_maxim(lp), -lp->infinite);
-  if(FALSE && (lp->int_vars > 0)) {
+  if(FFALSE && (lp->int_vars > 0)) {
 
     /* 1. Copy the problem into a new relaxed instance, extracting Lagrangean constraints */
     hlp = make_lag(lp);
@@ -1779,10 +1779,10 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
   }
 
   /* Allocate iteration arrays */
-  if(!allocREAL(lp, &OrigObj, lp->columns + 1, FALSE) ||
-     !allocREAL(lp, &ModObj,  lp->columns + 1, TRUE) ||
-     !allocREAL(lp, &SubGrad, get_Lrows(lp) + 1, TRUE) ||
-     !allocREAL(lp, &BestFeasSol, lp->sum + 1, TRUE)) {
+  if(!allocREAL(lp, &OrigObj, lp->columns + 1, FFALSE) ||
+     !allocREAL(lp, &ModObj,  lp->columns + 1, FTRUE) ||
+     !allocREAL(lp, &SubGrad, get_Lrows(lp) + 1, FTRUE) ||
+     !allocREAL(lp, &BestFeasSol, lp->sum + 1, FTRUE)) {
     lp->lag_status = NOMEMORY;
      return( lp->lag_status );
   }
@@ -1803,9 +1803,9 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
 
   Phi      = DEF_LAGCONTRACT; /* In the range 0-2.0 to guarantee convergence */
 /*  Phi      = 0.15; */
-  LagFeas  = FALSE;
-  Converged= FALSE;
-  AnyFeas  = FALSE;
+  LagFeas  = FFALSE;
+  Converged= FFALSE;
+  AnyFeas  = FFALSE;
   citer    = 0;
   nochange = 0;
 
@@ -1830,8 +1830,8 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
     /* Compute constraint feasibility gaps and associated sum of squares,
        and determine feasibility over the Lagrangean constraints;
        SubGrad is the subgradient, which here is identical to the slack. */
-    LagFeas = TRUE;
-    Converged = TRUE;
+    LagFeas = FTRUE;
+    Converged = FTRUE;
     SqrsumSubGrad = 0;
     for(i = 1; i <= get_Lrows(lp); i++) {
       hold = lp->lag_rhs[i];
@@ -1840,14 +1840,14 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
       if(LagFeas) {
         if(lp->lag_con_type[i] == EQ) {
           if(fabs(hold) > lp->epsprimal)
-            LagFeas = FALSE;
+            LagFeas = FFALSE;
         }
         else if(hold < -lp->epsprimal)
-          LagFeas = FALSE;
+          LagFeas = FFALSE;
       }
       /* Test for convergence and update */
       if(Converged && (fabs(my_reldiff(hold , SubGrad[i])) > lp->lag_accept))
-        Converged = FALSE;
+        Converged = FFALSE;
       SubGrad[i] = hold;
       SqrsumSubGrad += hold * hold;
     }
@@ -1900,7 +1900,7 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
 
       /* Reset variables */
       Zbest = Znow;
-      AnyFeas  = TRUE;
+      AnyFeas  = FTRUE;
       nochange = 0;
     }
     else if(Znow == Zprev) {
@@ -1961,7 +1961,7 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
     same_basis = compare_basis(lp);
     if(LagFeas &&
        !same_basis) {
-      pop_basis(lp, FALSE);
+      pop_basis(lp, FFALSE);
       push_basis(lp, NULL, NULL, NULL);
       Phi *= DEF_LAGCONTRACT;
     }
@@ -1978,7 +1978,7 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
     lp->lag_bound = my_chsign(is_maxim(lp), Zbest);
     for(i = 0; i <= lp->sum; i++)
       lp->solution[i] = BestFeasSol[i];
-    transfer_solution(lp, TRUE);
+    transfer_solution(lp, FTRUE);
     if(!is_maxim(lp))
       for(i = 1; i <= get_Lrows(lp); i++)
         lp->lambda[i] = my_flipsign(lp->lambda[i]);
@@ -2022,7 +2022,7 @@ Leave:
   FREE(SubGrad);
   FREE(OrigObj);
   FREE(ModObj);
-  pop_basis(lp, FALSE);
+  pop_basis(lp, FFALSE);
 
   lp->do_presolve = oldpresolve;
 
@@ -2041,7 +2041,7 @@ STATIC int spx_solve(lprec *lp)
   lp->bb_totalnodes    = 0;
   lp->bb_improvements  = 0;
   lp->bb_strongbranches= 0;
-  lp->is_strongbranch  = FALSE;
+  lp->is_strongbranch  = FFALSE;
   lp->bb_level         = 0;
   lp->bb_solutionlevel = 0;
   lp->best_solution[0] = my_chsign(is_maxim(lp), lp->infinite);
@@ -2066,7 +2066,7 @@ STATIC int spx_solve(lprec *lp)
     lp->solutioncount = 0;
     lp->real_solution = lp->infinite;
     set_action(&lp->spx_action, ACTION_REBASE | ACTION_REINVERT);
-    lp->bb_break = FALSE;
+    lp->bb_break = FFALSE;
 
     /* Do the call to the real underlying solver (note that
        run_BB is replaceable with any compatible MIP solver) */
@@ -2096,7 +2096,7 @@ Leave:
     int       itemp;
     REAL      test;
 
-    itemp = lp->bfp_nonzeros(lp, TRUE);
+    itemp = lp->bfp_nonzeros(lp, FTRUE);
     test = 100;
     if(lp->total_iter > 0)
       test *= (REAL) lp->total_bswap/lp->total_iter;
@@ -2110,7 +2110,7 @@ Leave:
                         lp->bfp_refactcount(lp, BFP_STAT_REFACT_TIMED),
                         lp->bfp_refactcount(lp, BFP_STAT_REFACT_DENSE));
     report(lp, NORMAL, "       ... on average %.1f major pivots per refactorization.\n",
-                        get_refactfrequency(lp, TRUE));
+                        get_refactfrequency(lp, FTRUE));
     report(lp, NORMAL, "      The largest [%s] fact(B) had %d NZ entries, %.1fx largest basis.\n",
                         lp->bfp_name(), itemp, lp->bfp_efficiency(lp));
     if(lp->perturb_count > 0)

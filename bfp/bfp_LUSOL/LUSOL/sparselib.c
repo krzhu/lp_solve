@@ -151,7 +151,7 @@ void moveVector(sparseVector *sparse, int destPos, int sourcePos, int itemCount)
     return;
 
 #if defined DOFASTMATH
-  if(TRUE) {
+  if(FTRUE) {
     MEMMOVE(&sparse->value[destPos], &sparse->value[sourcePos], itemCount);
     MEMMOVE(&sparse->index[destPos], &sparse->index[sourcePos], itemCount);
   }
@@ -238,7 +238,7 @@ MYBOOL verifyVector(sparseVector *sparse)
   kd = sparse->index[0];
   vd = sparse->value[0];
   if(n <= 1)
-    return(TRUE);
+    return(FTRUE);
   k1 = 0;
   k2 = sparse->index[1];
   if(k2 == kd && sparse->value[1] != vd) 
@@ -251,12 +251,12 @@ MYBOOL verifyVector(sparseVector *sparse)
     if(k2 == kd && sparse->value[i] != vd) err = 2;
   }
   if(err == 0)
-    return(TRUE);
+    return(FTRUE);
   else if(err == 1)
     printf("Invalid sparse vector index order");
   else if(err == 2)
     printf("Invalid sparse vector diagonal value");
-  return(FALSE);
+  return(FFALSE);
 }
 
 
@@ -297,10 +297,10 @@ MYBOOL putDiagonal(sparseVector *sparse, REAL value)
 {
   if(sparse->index[0]>0) {
     putItem(sparse, sparse->index[0], value); 
-    return(TRUE);
+    return(FTRUE);
   }
   else
-    return(FALSE);
+    return(FFALSE);
 }
 
 
@@ -414,7 +414,7 @@ void swapItems(sparseVector *sparse, int firstIndex, int secondIndex)
     secondIndex = i;
   }
 
-  if(FALSE) {
+  if(FFALSE) {
     i = 1;
     ki = 0;
     while(i <= sparse->count && (ki = sparse->index[i])<firstIndex) i++;
@@ -815,7 +815,7 @@ void dswapVector1(sparseVector *sparse, REAL *dense, int indexStart, int indexEn
     indexEnd = n;
   CALLOC(x, (MAX(indexEnd,n)+1));
 
-  getVector(sparse, x, indexStart, n, FALSE);
+  getVector(sparse, x, indexStart, n, FFALSE);
   d = getDiagonalIndex(sparse);
   clearVector(sparse, indexStart, n);
   for(i = indexStart; i<=indexEnd; i++) {
@@ -858,8 +858,8 @@ void dswapVector3(sparseVector *sparse1, sparseVector *sparse2, int indexStart, 
 
     CALLOC(dense1, (indexEnd+1));
     CALLOC(dense2, (indexEnd+1));
-    getVector(sparse1, dense1, indexStart, indexEnd, TRUE);
-    getVector(sparse2, dense2, indexStart, indexEnd, TRUE);
+    getVector(sparse1, dense1, indexStart, indexEnd, FTRUE);
+    getVector(sparse2, dense2, indexStart, indexEnd, FTRUE);
     clearVector(sparse1, indexStart, indexEnd);
     clearVector(sparse2, indexStart, indexEnd);
     putVector(sparse1, dense2, indexStart, indexEnd);

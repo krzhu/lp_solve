@@ -35,11 +35,11 @@ MYBOOL crash_basis(lprec *lp)
 {
   int     i;
   MATrec  *mat = lp->matA;
-  MYBOOL  ok = TRUE;
+  MYBOOL  ok = FTRUE;
 
   /* Initialize basis indicators */
   if(lp->basis_valid)
-    lp->var_basic[0] = FALSE;
+    lp->var_basic[0] = FFALSE;
   else
     default_basis(lp);
 
@@ -62,10 +62,10 @@ MYBOOL crash_basis(lprec *lp)
     report(lp, NORMAL, "crash_basis: 'Most feasible' basis crashing selected\n");
 
     /* Tally row and column non-zero counts */
-    ok = allocINT(lp,  &rowNZ, lp->rows+1,     TRUE) &&
-         allocINT(lp,  &colNZ, lp->columns+1,  TRUE) &&
-         allocREAL(lp, &rowMAX, lp->rows+1,    FALSE) &&
-         allocREAL(lp, &colMAX, lp->columns+1, FALSE);
+    ok = allocINT(lp,  &rowNZ, lp->rows+1,     FTRUE) &&
+         allocINT(lp,  &colNZ, lp->columns+1,  FTRUE) &&
+         allocREAL(lp, &rowMAX, lp->rows+1,    FFALSE) &&
+         allocREAL(lp, &colMAX, lp->columns+1, FFALSE);
     if(!ok)
       goto Finish;
 
@@ -114,7 +114,7 @@ MYBOOL crash_basis(lprec *lp)
     }
 
     /* Set up priority tables */
-    ok = allocINT(lp, &rowWT, lp->rows+1, TRUE);
+    ok = allocINT(lp, &rowWT, lp->rows+1, FTRUE);
     createLink(lp->rows,    &rowLL, NULL);
     ok &= (rowLL != NULL);
     if(!ok)
@@ -132,7 +132,7 @@ MYBOOL crash_basis(lprec *lp)
       if(ii > 0)
         appendLink(rowLL, i);
     }
-    ok = allocINT(lp, &colWT, lp->columns+1, TRUE);
+    ok = allocINT(lp, &colWT, lp->columns+1, FTRUE);
     createLink(lp->columns, &colLL, NULL);
     ok &= (colLL != NULL);
     if(!ok)
@@ -241,9 +241,9 @@ Finish:
     report(lp, NORMAL, "crash_basis: 'Least degenerate' basis crashing selected\n");
 
     /* Create temporary arrays */
-    ok = allocINT(lp,  &merit, lp->columns + 1, FALSE) &&
-         allocREAL(lp, &eta, lp->rows + 1, FALSE) &&
-         allocREAL(lp, &rhs, lp->rows + 1, FALSE);
+    ok = allocINT(lp,  &merit, lp->columns + 1, FFALSE) &&
+         allocREAL(lp, &eta, lp->rows + 1, FFALSE) &&
+         allocREAL(lp, &rhs, lp->rows + 1, FFALSE);
     createLink(lp->columns, &colLL, NULL);
     createLink(lp->rows, &rowLL, NULL);
     ok &= (colLL != NULL) && (rowLL != NULL);
@@ -337,7 +337,7 @@ FinishLD:
 #if 0
 MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 {
-  MYBOOL status = FALSE;
+  MYBOOL status = FFALSE;
   REAL   *values = NULL, *violation = NULL,
          *value, error, upB, loB, sortorder = 1.0;
   int    i, n, *rownr, *colnr;
@@ -347,8 +347,8 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
     return( status );
 
   /* Create helper arrays */
-  if(!allocREAL(lp, &values, lp->sum+1, TRUE) ||
-     !allocREAL(lp, &violation, lp->sum+1, TRUE))
+  if(!allocREAL(lp, &values, lp->sum+1, FTRUE) ||
+     !allocREAL(lp, &violation, lp->sum+1, FTRUE))
     goto Finish;
 
   /* Compute values of slack variables for given guess vector */
@@ -411,7 +411,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 
   /* Sort decending by violation; this means that variables with
      the largest violations will be designated as basic */
-  sortByREAL(basisvector, violation, lp->sum, 1, FALSE);
+  sortByREAL(basisvector, violation, lp->sum, 1, FFALSE);
 
   /* Adjust the non-basic indeces for the (proximal) bound state */
   error = lp->epsprimal;
@@ -439,7 +439,7 @@ Finish:
 #if 0
 MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 {
-  MYBOOL *isnz, status = FALSE;
+  MYBOOL *isnz, status = FFALSE;
   REAL   *values = NULL, *violation = NULL,
          eps = lp->epsprimal,
          *value, error, upB, loB, sortorder = 1.0;
@@ -451,8 +451,8 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
     return( status );
 
   /* Create helper arrays */
-  if(!allocREAL(lp, &values, lp->sum+1, TRUE) ||
-     !allocREAL(lp, &violation, lp->sum+1, TRUE))
+  if(!allocREAL(lp, &values, lp->sum+1, FTRUE) ||
+     !allocREAL(lp, &violation, lp->sum+1, FTRUE))
     goto Finish;
 
   /* Compute values of slack variables for given guess vector */
@@ -515,7 +515,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 
   /* Sort decending by violation; this means that variables with
      the largest violations will be designated as basic */
-  sortByREAL(basisvector, violation, lp->sum, 1, FALSE);
+  sortByREAL(basisvector, violation, lp->sum, 1, FFALSE);
   error = violation[1];
 
   /* Adjust the non-basic indeces for the (proximal) bound state */
@@ -539,14 +539,14 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
   for(i = 1; i <= nrows; i++) {
     j = abs(basisvector[i]);
     if(j <= nrows) {
-      isnz[j] = TRUE;
+      isnz[j] = FTRUE;
       slkpos[j] = i;
     }
     else {
       j-= nrows;
       j = mat->col_end[j-1];
-      isnz[COL_MAT_ROWNR(j)] = TRUE;
-      /*isnz[COL_MAT_ROWNR(j+1)] = TRUE;*/
+      isnz[COL_MAT_ROWNR(j)] = FTRUE;
+      /*isnz[COL_MAT_ROWNR(j+1)] = FTRUE;*/
     }
   }
   for(; i <= lp->sum; i++) {
@@ -562,7 +562,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
       report(lp, SEVERE, "guess_basis: Internal error");
 #endif
     if(!isnz[j]) {
-      isnz[j] = TRUE;
+      isnz[j] = FTRUE;
       i = slkpos[j];
       swapINT(&basisvector[i], &basisvector[j]);
       basisvector[j] = abs(basisvector[j]);
@@ -583,7 +583,7 @@ Finish:
 #if 0
 MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 {
-  MYBOOL *isnz, status = FALSE;
+  MYBOOL *isnz, status = FFALSE;
   REAL   *values = NULL, *violation = NULL,
          eps = lp->epsprimal,
          *value, error, upB, loB, sortorder = 1.0;
@@ -595,8 +595,8 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
     return( status );
 
   /* Create helper arrays */
-  if(!allocREAL(lp, &values, lp->sum+1, TRUE) ||
-     !allocREAL(lp, &violation, lp->sum+1, TRUE))
+  if(!allocREAL(lp, &values, lp->sum+1, FTRUE) ||
+     !allocREAL(lp, &violation, lp->sum+1, FTRUE))
     goto Finish;
 
   /* Compute values of slack variables for given guess vector */
@@ -659,7 +659,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 
   /* Sort decending by violation; this means that variables with
      the largest violations will be designated as basic */
-  sortByREAL(basisvector, violation, lp->sum, 1, FALSE);
+  sortByREAL(basisvector, violation, lp->sum, 1, FFALSE);
   error = violation[1];
 
   /* Adjust the non-basic indeces for the (proximal) bound state */
@@ -683,15 +683,15 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
   for(i = 1; i <= nrows; i++) {
     j = abs(basisvector[i]);
     if(j <= nrows) {
-      isnz[j] = TRUE;
+      isnz[j] = FTRUE;
       slkpos[j] = i;
     }
     else {
       j-= nrows;
       jj = mat->col_end[j-1];
-      isnz[COL_MAT_ROWNR(jj)] = TRUE;
+      isnz[COL_MAT_ROWNR(jj)] = FTRUE;
 /*      if(++jj < mat->col_end[j])
-        isnz[COL_MAT_ROWNR(jj)] = TRUE; */
+        isnz[COL_MAT_ROWNR(jj)] = FTRUE; */
     }
   }
   for(; i <= lp->sum; i++) {
@@ -707,7 +707,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
       report(lp, SEVERE, "guess_basis: Internal error");
 #endif
     if(!isnz[j]) {
-      isnz[j] = TRUE;
+      isnz[j] = FTRUE;
       i = slkpos[j];
       swapINT(&basisvector[i], &basisvector[j]);
       basisvector[j] = abs(basisvector[j]);
@@ -730,7 +730,7 @@ Finish:
 
 MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
 {
-  MYBOOL *isnz = NULL, status = FALSE;
+  MYBOOL *isnz = NULL, status = FFALSE;
   REAL   *values = NULL, *violation = NULL,
          eps = lp->epsprimal,
          *value, error, upB, loB, sortorder = -1.0;
@@ -743,8 +743,8 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
     return( status );
 
   /* Create helper arrays, providing for multiple use of the violation array */
-  if(!allocREAL(lp, &values, nsum+1, TRUE) ||
-     !allocREAL(lp, &violation, nsum+1, TRUE))
+  if(!allocREAL(lp, &values, nsum+1, FTRUE) ||
+     !allocREAL(lp, &violation, nsum+1, FTRUE))
     goto Finish;
 
   /* Compute the values of the constraints for the given guess vector */
@@ -793,7 +793,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
   /* Sort decending , meaning that variables with the largest
      "violations" will be designated basic. Effectively, we are performing a
      greedy type algorithm, but start at the "least interesting" end. */
-  sortByREAL(basisvector, violation, nsum, 1, FALSE);
+  sortByREAL(basisvector, violation, nsum, 1, FFALSE);
   error = violation[1]; /* Used for setting the return value */
 
   /* Let us check for obvious row singularities and try to fix these.
@@ -807,14 +807,14 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
   for(i = 1; i <= nrows; i++) {
     j = abs(basisvector[i]);
     if(j <= nrows) {
-      isnz[j] = TRUE;
+      isnz[j] = FTRUE;
       slkpos[j] = i;
     }
     else {
       j-= nrows;
       jj = mat->col_end[j-1];
       jj = COL_MAT_ROWNR(jj);
-      isnz[jj] = TRUE;
+      isnz[jj] = FTRUE;
     }
   }
   for(; i <= nsum; i++) {
@@ -828,7 +828,7 @@ MYBOOL __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector)
     if(slkpos[j] == 0)
       report(lp, SEVERE, "guess_basis: Internal error");
     if(!isnz[j]) {
-      isnz[j] = TRUE;
+      isnz[j] = FTRUE;
       i = slkpos[j];
       swapINT(&basisvector[i], &basisvector[j]);
       basisvector[j] = abs(basisvector[j]);

@@ -118,11 +118,11 @@ int main(void)
   print_constraints(lp, 1);
   press_ret();
   printf("We change %s to the integer type with\n", get_col_name(lp, 4));
-  printf("set_int(lp, 4, TRUE)\n");
-  set_int(lp, 4, TRUE);
+  printf("set_int(lp, 4, FTRUE)\n");
+  set_int(lp, 4, FTRUE);
   print_lp(lp);
-  printf("We set branch & bound debugging on with set_debug(lp, TRUE)\n");
-  set_debug(lp, TRUE);
+  printf("We set branch & bound debugging on with set_debug(lp, FTRUE)\n");
+  set_debug(lp, FTRUE);
   printf("and solve...\n");
   press_ret();
   solve(lp);
@@ -180,8 +180,8 @@ int main(void)
   printf("If there are any integer type variables, then only the rows are scaled\n");
   printf("set_scaling(lp, SCALE_MEAN);\n");
   set_scaling(lp, SCALE_MEAN);
-  printf("set_int(lp,3,FALSE);\n");
-  set_int(lp,3,FALSE);
+  printf("set_int(lp,3,FFALSE);\n");
+  set_int(lp,3,FFALSE);
   print_lp(lp);
   press_ret();
   solve(lp);
@@ -195,9 +195,9 @@ int main(void)
   print_lp(lp);
   press_ret();
   printf("Now turn B&B debugging off and simplex tracing on with\n");
-  printf("set_debug(lp, FALSE), set_trace(lp, TRUE) and solve(lp)\n");
-  set_debug(lp, FALSE);
-  set_trace(lp, TRUE);
+  printf("set_debug(lp, FFALSE), set_trace(lp, FTRUE) and solve(lp)\n");
+  set_debug(lp, FFALSE);
+  set_trace(lp, FTRUE);
   press_ret();
   solve(lp);
   printf("Where possible, lp_solve will start at the last found basis\n");
@@ -227,9 +227,9 @@ int main(void)
   delete_lp(lp);
 
   printf("An lp structure can be created and read from a .lp file\n");
-  printf("lp = read_lp(\"lp.lp\", TRUE);\n");
+  printf("lp = read_lp(\"lp.lp\", FTRUE);\n");
   printf("The verbose option is used\n");
-  if ((lp = read_LP("lp.lp", TRUE, "test")) == NULL)
+  if ((lp = read_LP("lp.lp", FTRUE, "test")) == NULL)
     ERROR();
   press_ret();
   printf("lp is now:\n");
@@ -237,9 +237,9 @@ int main(void)
 
   press_ret();
   printf("solution:\n");
-  set_debug(lp, TRUE);
+  set_debug(lp, FTRUE);
   solve(lp);
-  set_debug(lp, FALSE);
+  set_debug(lp, FFALSE);
   print_objective(lp);
   print_solution(lp, 1);
   print_constraints(lp, 1);

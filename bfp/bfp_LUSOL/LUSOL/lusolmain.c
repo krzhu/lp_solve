@@ -55,7 +55,7 @@ void main( int argc, char *argv[], char *envp[] )
 /* Overall dimensions allocated */
   int    maxm = MAXROWS, maxn = MAXCOLS, maxnz = MAXNZ,
          replace = 0, randcol = 0;
-  MYBOOL ftran = TRUE;
+  MYBOOL ftran = FTRUE;
 
 /* Storage for A, b */
   REAL   *Aij = NULL, *b = NULL, *xexact = NULL;
@@ -72,7 +72,7 @@ void main( int argc, char *argv[], char *envp[] )
        bnorm , rnorm , xnorm,
        *rhs = NULL, *r = NULL, *x = NULL;
   char fileext[50], filename[255], blasname[255];
-  MYBOOL printsolution = FALSE, success = FALSE;
+  MYBOOL printsolution = FFALSE, success = FFALSE;
 
 /* Check if we have input parameters */
   useropt = argc;
@@ -138,9 +138,9 @@ void main( int argc, char *argv[], char *envp[] )
       }
     }
     else if(strcmp("-s", argv[i]) == 0)
-      printsolution = TRUE;
+      printsolution = FTRUE;
     else if(strcmp("-b", argv[i]) == 0)
-      ftran = FALSE;
+      ftran = FFALSE;
     else if(strcmp("-r", argv[i]) == 0) {
       i1 = i+1;
       if((i1 < argc) && isNum(argv[i1][0])) {
@@ -301,7 +301,7 @@ void main( int argc, char *argv[], char *envp[] )
       goto x900;
     }
   }
-  success = TRUE;
+  success = FTRUE;
 
 /* -----------------------------------------------------------------
    Show data on input
@@ -317,14 +317,14 @@ void main( int argc, char *argv[], char *envp[] )
    ----------------------------------------------------------------- */
 #if 0 /* BUG !!! */
   if(n != m)
-    LUSOL->luparm[LUSOL_IP_KEEPLU] = FALSE;
+    LUSOL->luparm[LUSOL_IP_KEEPLU] = FFALSE;
 #endif
 #ifdef LegacyTesting
   LUSOL->luparm[LUSOL_IP_SCALAR_NZA] = LUSOL_MULT_nz_a;
   LUSOL_sizeto(LUSOL, MAXROWS, MAXCOLS, MAXNZ*LUSOL_MULT_nz_a);
 #endif
 
-  if(!LUSOL_assign(LUSOL, iA, jA, Aij, nnzero, TRUE)) {
+  if(!LUSOL_assign(LUSOL, iA, jA, Aij, nnzero, FTRUE)) {
     fprintf(outunit, "Error: LUSOL failed due to insufficient memory.\n");
     goto x900;
   }
@@ -353,7 +353,7 @@ void main( int argc, char *argv[], char *envp[] )
 
 Resolve:
   if(ftran)
-    inform = LUSOL_ftran(LUSOL, x, NULL, FALSE);
+    inform = LUSOL_ftran(LUSOL, x, NULL, FFALSE);
   else
     inform = LUSOL_btran(LUSOL, x, NULL);
   if(inform > LUSOL_INFORM_SERIOUS) {

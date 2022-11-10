@@ -64,23 +64,23 @@ STATIC void freePricer(lprec *lp)
 STATIC MYBOOL resizePricer(lprec *lp)
 {
   if(!applyPricer(lp))
-    return( TRUE );
+    return( FTRUE );
 
   /* Reallocate vector for new size */
   if(!allocREAL(lp, &(lp->edgeVector), lp->sum_alloc+1, AUTOMATIC))
-    return( FALSE );
+    return( FFALSE );
 
   /* Signal that we have not yet initialized the price vector */
   MEMCLEAR(lp->edgeVector, lp->sum_alloc+1);
   lp->edgeVector[0] = -1;
-  return( TRUE );
+  return( FTRUE );
 }
 
 
 STATIC MYBOOL initPricer(lprec *lp)
 {
   if(!applyPricer(lp))
-    return( FALSE );
+    return( FFALSE );
 
   /* Free any pre-existing pricer */
   freePricer(lp);
@@ -157,7 +157,7 @@ STATIC MYBOOL restartPricer(lprec *lp, MYBOOL isdual)
     isDEVEX = is_piv_mode(lp, PRICE_PRIMALFALLBACK);
 
   /* Check if we only need to do the simple DEVEX initialization */
-  if(!is_piv_mode(lp, PRICE_TRUENORMINIT)) {
+  if(!is_piv_mode(lp, PRICE_FTRUENORMINIT)) {
     if(isdual) {
       for(i = 1; i <= m; i++)
         lp->edgeVector[lp->var_basic[i]] = 1.0;
@@ -171,7 +171,7 @@ STATIC MYBOOL restartPricer(lprec *lp, MYBOOL isdual)
   }
 
   /* Otherwise do the full Steepest Edge norm initialization */
-  ok = allocREAL(lp, &sEdge, m+1, FALSE);
+  ok = allocREAL(lp, &sEdge, m+1, FFALSE);
   if(!ok)
     return( ok );
 
@@ -203,7 +203,7 @@ STATIC MYBOOL restartPricer(lprec *lp, MYBOOL isdual)
       if(lp->is_basic[i])
         continue;
 
-      fsolve(lp, i, sEdge, NULL, 0, 0.0, FALSE);
+      fsolve(lp, i, sEdge, NULL, 0, 0.0, FFALSE);
 
       /* Compute the edge norm */
       seNorm = 1;
@@ -227,11 +227,11 @@ STATIC MYBOOL restartPricer(lprec *lp, MYBOOL isdual)
 STATIC MYBOOL formWeights(lprec *lp, int colnr, REAL *pcol, REAL **w)
 /* This computes Bw = a, where B is the basis and a is a column of A */
 {
-  MYBOOL ok = allocREAL(lp, w, lp->rows+1, FALSE);
+  MYBOOL ok = allocREAL(lp, w, lp->rows+1, FFALSE);
 
   if(ok) {
     if(pcol == NULL)
-      fsolve(lp, colnr, *w, NULL, 0.0, 0.0, FALSE);
+      fsolve(lp, colnr, *w, NULL, 0.0, 0.0, FFALSE);
     else {
       MEMCOPY(*w, pcol, lp->rows+1);
 /*    *w[0] = 0; */ /* Test */
@@ -265,7 +265,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
 {
   REAL   *vEdge = NULL, cEdge, hold, *newEdge, *w = NULL;
   int    i, m, n, exitcol, errlevel = DETAILED;
-  MYBOOL forceRefresh = FALSE, isDual, isDEVEX, ok = FALSE;
+  MYBOOL forceRefresh = FFALSE, isDual, isDEVEX, ok = FFALSE;
 
   if(!applyPricer(lp))
     return(ok);
@@ -298,7 +298,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
 
     /* Don't need to compute cross-products with DEVEX */
     if(!isDEVEX) {
-      ok = allocREAL(lp, &vEdge, m+1, FALSE);
+      ok = allocREAL(lp, &vEdge, m+1, FFALSE);
       if(!ok)
         return( ok );
 
@@ -317,7 +317,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
     cEdge = lp->edgeVector[exitcol];
     rw = w[rownr];
     if(fabs(rw) < lp->epspivot) {
-      forceRefresh = TRUE;
+      forceRefresh = FTRUE;
       goto Finish2;
     }
 
@@ -347,7 +347,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
       *newEdge += (hold*hold) * cEdge;
       if(isDEVEX) {
         if((*newEdge) > DEVEX_RESTARTLIMIT) {
-          forceRefresh = TRUE;
+          forceRefresh = FTRUE;
           break;
         }
       }
@@ -359,7 +359,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
         if(*newEdge <= 0) {
           report(lp, errlevel, "updatePricer: Invalid dual norm %g at index %d - iteration %.0f\n",
                                 *newEdge, i, (double) (lp->total_iter+lp->current_iter));
-          forceRefresh = TRUE;
+          forceRefresh = FTRUE;
           break;
         }
 #endif
@@ -374,8 +374,8 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
     REAL *vTemp = NULL, *vAlpha = NULL, cAlpha;
     int  *coltarget;
 
-    ok = allocREAL(lp, &vTemp, m+1, TRUE) &&
-         allocREAL(lp, &vAlpha, n+1, TRUE);
+    ok = allocREAL(lp, &vTemp, m+1, FTRUE) &&
+         allocREAL(lp, &vAlpha, n+1, FTRUE);
     if(!ok)
       return( ok );
 
@@ -385,15 +385,15 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
 
     /* Initialize column target array */
     coltarget = (int *) mempool_obtainVector(lp->workarrays, lp->sum+1, sizeof(*coltarget));
-    ok = get_colIndexA(lp, SCAN_SLACKVARS+SCAN_USERVARS+USE_NONBASICVARS, coltarget, FALSE);
+    ok = get_colIndexA(lp, SCAN_SLACKVARS+SCAN_USERVARS+USE_NONBASICVARS, coltarget, FFALSE);
     if(!ok) {
-      mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
+      mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
       return( ok );
     }
 
     /* Don't need to compute cross-products with DEVEX */
     if(!isDEVEX) {
-      ok = allocREAL(lp, &vEdge, n+1, TRUE);
+      ok = allocREAL(lp, &vEdge, n+1, FTRUE);
       if(!ok)
         return( ok );
 
@@ -410,13 +410,13 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
     vTemp[0] = 0;
     prod_xA(lp, coltarget, vTemp, NULL, lp->epsmachine, 0.0,
                            vAlpha, NULL, MAT_ROUNDDEFAULT);
-    mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
+    mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
 
     /* Update the squared steepest edge norms; first store some constants */
     cEdge = lp->edgeVector[colnr];
     cAlpha = vAlpha[colnr];
     if(fabs(cAlpha) < lp->epspivot) {
-      forceRefresh = TRUE;
+      forceRefresh = FTRUE;
       goto Finish1;
     }
 
@@ -445,7 +445,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
       *newEdge += (hold*hold) * cEdge;
       if(isDEVEX) {
         if((*newEdge) > DEVEX_RESTARTLIMIT) {
-          forceRefresh = TRUE;
+          forceRefresh = FTRUE;
           break;
         }
       }
@@ -459,7 +459,7 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
                                *newEdge, i, (double) (lp->total_iter+lp->current_iter));
           if(lp->spx_trace)
             report(lp, errlevel, "Error detail: (RelAlpha=%g, vEdge=%g, cEdge=%g)\n", hold, vEdge[i], cEdge);
-          forceRefresh = TRUE;
+          forceRefresh = FTRUE;
           break;
         }
 #endif
@@ -479,7 +479,7 @@ Finish2:
   if(forceRefresh)
     ok = restartPricer(lp, AUTOMATIC);
   else
-    ok = TRUE;
+    ok = FTRUE;
 
   return( ok );
 
@@ -494,7 +494,7 @@ STATIC MYBOOL verifyPricer(lprec *lp)
 
   if(!ok)
     return( ok );
-  ok = FALSE;
+  ok = FFALSE;
 
   /* Verify */
   if(lp->edgeVector == NULL)

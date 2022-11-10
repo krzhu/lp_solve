@@ -9,6 +9,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
                        LPVOID lpReserved
            )
 {
-    return TRUE;
+    return FTRUE;
 }
 

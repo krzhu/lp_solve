@@ -5,7 +5,7 @@
    the corresponding entry in h is non-zero. */
 MYBOOL LU1U0(LUSOLrec *LUSOL, LUSOLmat **mat, int *inform)
 {
-  MYBOOL status = FALSE;
+  MYBOOL status = FFALSE;
   int    K, L, LL, LENU, NUMU, J;
   int    *lsumc;
 
@@ -83,7 +83,7 @@ MYBOOL LU1U0(LUSOLrec *LUSOL, LUSOLmat **mat, int *inform)
   }
 
   /* Confirm that everything went well */
-  status = TRUE;
+  status = FTRUE;
 
   /* Clean up */
 Finish:

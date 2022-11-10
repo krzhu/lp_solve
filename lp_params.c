@@ -125,22 +125,22 @@ static struct _values improve[] =
 
 static REAL __WINAPI get_mip_gap_abs(lprec *lp)
 {
-  return(get_mip_gap(lp, TRUE));
+  return(get_mip_gap(lp, FTRUE));
 }
 
 static REAL __WINAPI get_mip_gap_rel(lprec *lp)
 {
-  return(get_mip_gap(lp, FALSE));
+  return(get_mip_gap(lp, FFALSE));
 }
 
 static void __WINAPI set_mip_gap_abs(lprec *lp, REAL mip_gap)
 {
-  set_mip_gap(lp, TRUE, mip_gap);
+  set_mip_gap(lp, FTRUE, mip_gap);
 }
 
 static void __WINAPI set_mip_gap_rel(lprec *lp, REAL mip_gap)
 {
-  set_mip_gap(lp, FALSE, mip_gap);
+  set_mip_gap(lp, FFALSE, mip_gap);
 }
 
 static struct _values pivoting[] =
@@ -158,7 +158,7 @@ static struct _values pivoting[] =
   { setvalue(PRICE_LOOPLEFT) },
   { setvalue(PRICE_LOOPALTERNATE) },
   { setvalue(PRICE_HARRISTWOPASS) },
-  { setvalue(PRICE_TRUENORMINIT) },
+  { setvalue(PRICE_FTRUENORMINIT) },
 };
 
 static struct _values presolving[] =
@@ -219,8 +219,8 @@ static void __WINAPI set_presolve2(lprec *lp, int maxloops)
 
 static struct _values print_sol[] =
 {
-  { FALSE, "0" },
-  { TRUE,  "1" },
+  { FFALSE, "0" },
+  { FTRUE,  "1" },
   { setvalue(AUTOMATIC) },
 };
 
@@ -441,29 +441,29 @@ MYBOOL __WINAPI write_params(lprec *lp, char *filename, char *options)
     case EACCES: /* File or directory specified by newname already exists or could not be created (invalid path); or oldname is a directory and newname specifies a different path. */
       FREE(filename0);
       FREE(header);
-      return(FALSE);
+      return(FFALSE);
       break;
     }
   }
 
   if((fp = ini_create(filename)) == NULL)
-    ret = FALSE;
+    ret = FFALSE;
   else {
-    params_written = FALSE;
-    newline = TRUE;
+    params_written = FFALSE;
+    newline = FTRUE;
     if(filename0 != NULL) {
       fp0 = ini_open(filename0);
       if(fp0 == NULL) {
         rename(filename0, filename);
         FREE(filename0);
         FREE(header);
-        return(FALSE);
+        return(FFALSE);
       }
-      looping = TRUE;
+      looping = FTRUE;
       while(looping) {
-        switch(ini_readdata(fp0, buf, sizeof(buf), TRUE)) {
+        switch(ini_readdata(fp0, buf, sizeof(buf), FTRUE)) {
         case 0: /* End of file */
-          looping = FALSE;
+          looping = FFALSE;
           break;
         case 1: /* header */
           ptr1 = strdup(buf);
@@ -472,14 +472,14 @@ MYBOOL __WINAPI write_params(lprec *lp, char *filename, char *options)
           STRUPR(ptr2);
           if(strcmp(buf, ptr2) == 0) {
             write_params1(lp, fp, ptr1, newline);
-            params_written = TRUE;
-            newline = TRUE;
+            params_written = FTRUE;
+            newline = FTRUE;
             state = 1;
           }
           else {
             state = 0;
             ini_writeheader(fp, ptr1, newline);
-            newline = TRUE;
+            newline = FTRUE;
           }
           FREE(ptr2);
           FREE(ptr1);
@@ -499,7 +499,7 @@ MYBOOL __WINAPI write_params(lprec *lp, char *filename, char *options)
       write_params1(lp, fp, header, newline);
 
     ini_close(fp);
-    ret = TRUE;
+    ret = FTRUE;
   }
 
   if(filename0 != NULL) {
@@ -524,7 +524,7 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
   char buf[4096], *header = NULL, *ptr, *ptr1, *ptr2;
 
   if((fp = ini_open(filename)) == NULL)
-    ret = FALSE;
+    ret = FFALSE;
   else {
     /* create hashtable of all callable commands to find them quickly */
     hashfunctions = create_hash_table(sizeof(functions) / sizeof(*functions), 0);
@@ -548,13 +548,13 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
     readoptions(options, &header);
 
     STRUPR(header);
-    ret = looping = TRUE;
+    ret = looping = FTRUE;
     line = 0;
     while((ret) && (looping)) {
       line++;
-      switch(ini_readdata(fp, buf, sizeof(buf), FALSE)) {
+      switch(ini_readdata(fp, buf, sizeof(buf), FFALSE)) {
         case 0: /* End of file */
-          looping = FALSE;
+          looping = FFALSE;
           break;
         case 1: /* header */
           switch(state) {
@@ -564,7 +564,7 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
                 state = 1;
               break;
             case 1:
-              looping = FALSE;
+              looping = FFALSE;
               break;
           }
           break;
@@ -579,7 +579,7 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
             ptr = strchr(buf, '=');
             if(ptr == NULL) {
               report(lp, IMPORTANT, "read_params: No equal sign on line %d\n", line);
-              ret = FALSE;
+              ret = FFALSE;
             }
             else {
               *ptr = 0;
@@ -587,14 +587,14 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
               for(ptr2 = ptr - 1; (ptr2 >= ptr1) && (isspace(*ptr2)); ptr2--);
               if(ptr2 <= ptr1) {
                 report(lp, IMPORTANT, "read_params: No parameter name before equal sign on line %d\n", line);
-                ret = FALSE;
+                ret = FFALSE;
               }
               else {
                 ptr2[1] = 0;
                 hp = findhash(ptr1, hashfunctions);
                 if(hp == NULL) {
                   report(lp, IMPORTANT, "read_params: Unknown parameter name (%s) before equal sign on line %d\n", ptr1, line);
-                  ret = FALSE;
+                  ret = FFALSE;
                 }
                 else {
                   i = hp->index;
@@ -611,7 +611,7 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
                           ptr2++;
                         if(*ptr2) {
                           report(lp, IMPORTANT, "read_params: Invalid integer value on line %d\n", line);
-                          ret = FALSE;
+                          ret = FFALSE;
                         }
                         break;
                       case REALfunction:
@@ -620,7 +620,7 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
                           ptr2++;
                         if(*ptr2) {
                           report(lp, IMPORTANT, "read_params: Invalid real value on line %d\n", line);
-                          ret = FALSE;
+                          ret = FFALSE;
                         }
                         break;
                     }
@@ -639,14 +639,14 @@ MYBOOL __WINAPI read_params(lprec *lp, char *filename, char *options)
                         hp = findhash(ptr1, hashparameters);
                         if (hp == NULL) {
                           report(lp, IMPORTANT, "read_params: Invalid parameter name (%s) on line %d\n", ptr1, line);
-                          ret = FALSE;
+                          ret = FFALSE;
                         }
                         else {
                           j = hp->index;
                           if((j >= functions[i].elements) ||
                              (strcmp(functions[i].values[j].svalue, ptr1))) {
                             report(lp, IMPORTANT, "read_params: Inappropriate parameter name (%s) on line %d\n", ptr1, line);
-                            ret = FALSE;
+                            ret = FFALSE;
                           }
                           else {
                             intvalue += functions[i].values[j].value;

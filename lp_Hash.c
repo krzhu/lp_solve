@@ -115,7 +115,7 @@ STATIC hashelem *puthash(const char *name, int index, hashelem **list, hashtable
 
     hashindex = hashval(name, ht->size);
     hp = (hashelem *) calloc(1, sizeof(*hp));
-    allocCHAR(NULL, &hp->name, (int) (strlen(name) + 1), FALSE);
+    allocCHAR(NULL, &hp->name, (int) (strlen(name) + 1), FFALSE);
     strcpy(hp->name, name);
     hp->index = index;
     ht->count++;

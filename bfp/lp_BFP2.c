@@ -15,7 +15,7 @@ MYBOOL BFP_CALLMODEL bfp_init(lprec *lp, int size, int delta, char *options)
   if((lu == NULL) || 
      !lp->bfp_resize(lp, size) ||
      !lp->bfp_restart(lp))
-    return( FALSE );
+    return( FFALSE );
 
   /* Store any passed options */
   if(options != NULL) {
@@ -28,7 +28,7 @@ MYBOOL BFP_CALLMODEL bfp_init(lprec *lp, int size, int delta, char *options)
   lp->bfp_preparefactorization(lp);
   lu->num_refact = 0;
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 /* DON'T MODIFY */
@@ -38,7 +38,7 @@ MYBOOL BFP_CALLMODEL bfp_restart(lprec *lp)
 
   lu = lp->invB;
   if(lu == NULL)
-    return( FALSE );
+    return( FFALSE );
 
   lu->status = BFP_STATUS_SUCCESS;
   lu->max_Bsize = 0;          /* The largest NZ-count of the B matrix            */
@@ -49,15 +49,15 @@ MYBOOL BFP_CALLMODEL bfp_restart(lprec *lp)
   lu->num_dense_refact = 0;
   lu->num_pivots = 0;         /* The number of pivots since last factorization   */
   lu->pcol = NULL;
-  lu->set_Bidentity = FALSE;
+  lu->set_Bidentity = FFALSE;
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 /* DON'T MODIFY */
 MYBOOL BFP_CALLMODEL bfp_implicitslack(lprec *lp)
 {
-  return( FALSE );
+  return( FFALSE );
 }
 
 /* DON'T MODIFY */
@@ -70,7 +70,7 @@ int BFP_CALLMODEL bfp_colcount(lprec *lp)
 /* DON'T MODIFY */
 MYBOOL BFP_CALLMODEL bfp_canresetbasis(lprec *lp)
 {
-  return( FALSE );
+  return( FFALSE );
 }
 
 
@@ -78,7 +78,7 @@ MYBOOL BFP_CALLMODEL bfp_canresetbasis(lprec *lp)
 MYBOOL BFP_CALLMODEL bfp_pivotalloc(lprec *lp, int newsize)
 {
   /* Does nothing in the default implementation */
-  return( TRUE );
+  return( FTRUE );
 }
 
 
@@ -90,12 +90,12 @@ void BFP_CALLMODEL bfp_finishfactorization(lprec *lp)
   lu = lp->invB;
 
   SETMAX(lu->max_colcount, lp->bfp_colcount(lp));
-  SETMAX(lu->max_LUsize, lp->bfp_nonzeros(lp, FALSE));
+  SETMAX(lu->max_LUsize, lp->bfp_nonzeros(lp, FFALSE));
 
   /* Signal that we done factorizing/reinverting */
-  lu->is_dirty = FALSE;
+  lu->is_dirty = FFALSE;
   lp->clear_action(&lp->spx_action, ACTION_REINVERT | ACTION_TIMEDREINVERT);
-  lu->force_refact = FALSE;
+  lu->force_refact = FFALSE;
 
   /* Store information about the current inverse */
   lu->num_pivots = 0;
@@ -127,7 +127,7 @@ LREAL BFP_CALLMODEL bfp_prepareupdate(lprec *lp, int row_nr, int col_nr, REAL *p
 
   /* Set completion status; but hold if we are reinverting */
   if(lu->is_dirty != AUTOMATIC)
-    lu->is_dirty = TRUE;
+    lu->is_dirty = FTRUE;
 
   return( pivValue );
 }

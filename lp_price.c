@@ -388,7 +388,7 @@ STATIC MYBOOL validSubstitutionVar(pricerec *candidate)
 
 #ifdef Paranoia
   if(candidate->varno <= 0)
-    return( FALSE );
+    return( FFALSE );
   else
 #endif
   if(fabs(candidate->pivot) >= lp->infinite)
@@ -431,7 +431,7 @@ STATIC int addCandidateVar(pricerec *candidate, multirec *multi, findCompare_fun
     /* Perform the search */
     searchTarget.pvoidint2.ptr = (void *) candidate;
     insertpos = sizeof(searchTarget);
-    insertpos = findIndexEx(&searchTarget, multi->sortedList-delta, multi->used, delta, insertpos, findCompare, TRUE);
+    insertpos = findIndexEx(&searchTarget, multi->sortedList-delta, multi->used, delta, insertpos, findCompare, FTRUE);
     if(insertpos > 0)
       return( -1 );
     insertpos = -insertpos - delta;
@@ -501,9 +501,9 @@ STATIC MYBOOL findImprovementVar(pricerec *current, pricerec *candidate, MYBOOL 
 
    Allowed variable set: Any pivot PRIMAL:larger or DUAL:smaller than threshold value of 0 */
 {
-  MYBOOL Action = FALSE,
+  MYBOOL Action = FFALSE,
 #ifdef ExtractedValidityTest
-         Accept = TRUE;
+         Accept = FTRUE;
 #else    /* Check for validity and compare result with previous best */
          Accept = validImprovementVar(candidate);
 #endif
@@ -511,7 +511,7 @@ STATIC MYBOOL findImprovementVar(pricerec *current, pricerec *candidate, MYBOOL 
     if(candidatecount != NULL)
       (*candidatecount)++;
     if(collectMP) {
-      if(addCandidateVar(candidate, current->lp->multivars, (findCompare_func *) compareImprovementQS, FALSE) < 0)
+      if(addCandidateVar(candidate, current->lp->multivars, (findCompare_func *) compareImprovementQS, FFALSE) < 0)
         return(Action);
     }
     if(current->varno > 0)
@@ -537,7 +537,7 @@ STATIC MYBOOL collectMinorVar(pricerec *candidate, multirec *longsteps, MYBOOL i
   /* 1. Check for ratio and pivot validity (to have the extra flexibility that all
         bound-flip candidates are also possible as basis-entering variables */
   if(!validSubstitutionVar(candidate))
-    return( FALSE );
+    return( FFALSE );
 
   /* 2. If the free-list is empty we need to see if we have a better candidate,
         and for this the candidate list has to be sorted by merit */
@@ -550,7 +550,7 @@ STATIC MYBOOL collectMinorVar(pricerec *candidate, multirec *longsteps, MYBOOL i
                                    (findCompare_func *) compareSubstitutionQS, &inspos);
     longsteps->dirty  = (MYBOOL) (inspos > 0);
     if(longsteps->dirty)
-      multi_recompute(longsteps, 0, isphase2, TRUE);
+      multi_recompute(longsteps, 0, isphase2, FTRUE);
   }
 
   /* 3. Now handle three cases...
@@ -558,12 +558,12 @@ STATIC MYBOOL collectMinorVar(pricerec *candidate, multirec *longsteps, MYBOOL i
         - Check if we should replace an incumbent when the list is full,
         - Check if we should replace an incumbent when the list is not full, there is no room
           for improvement, but the current candidate is better than an incumbent. */
-  inspos = addCandidateVar(candidate, longsteps, (findCompare_func *) compareSubstitutionQS, TRUE);
+  inspos = addCandidateVar(candidate, longsteps, (findCompare_func *) compareSubstitutionQS, FTRUE);
 
   /* 4. Recompute steps and objective, and (if relevant) determine if we
         may be suboptimal in relation to an incumbent MILP solution. */
   return( (MYBOOL) (inspos >= 0) &&
-           ((isbatch == TRUE) || multi_recompute(longsteps, inspos, isphase2, TRUE)) );
+           ((isbatch == FTRUE) || multi_recompute(longsteps, inspos, isphase2, FTRUE)) );
 }
 
 STATIC MYBOOL findSubstitutionVar(pricerec *current, pricerec *candidate, int *candidatecount)
@@ -572,9 +572,9 @@ STATIC MYBOOL findSubstitutionVar(pricerec *current, pricerec *candidate, int *c
 
    Allowed variable set: "Equal-valued" smallest thetas! */
 {
-  MYBOOL Action = FALSE,
+  MYBOOL Action = FFALSE,
 #ifdef ExtractedValidityTest
-         Accept = TRUE;
+         Accept = FTRUE;
 #else  /* Check for validity and comparison result with previous best */
          Accept = validSubstitutionVar(candidate);
 #endif
@@ -649,11 +649,11 @@ STATIC void makePriceLoop(lprec *lp, int *start, int *end, int *delta)
      (((lp->total_iter+offset) % 2 == 0) && is_piv_mode(lp, PRICE_LOOPALTERNATE))) {
     *delta = -1; /* Step backwards - "left" */
     swapINT(start, end);
-    lp->_piv_left_ = TRUE;
+    lp->_piv_left_ = FTRUE;
   }
   else {
     *delta = 1;  /* Step forwards - "right" */
-    lp->_piv_left_ = FALSE;
+    lp->_piv_left_ = FFALSE;
   }
 }
 
@@ -765,7 +765,7 @@ STATIC void compute_reducedcosts(lprec *lp, MYBOOL isdual, int row_nr, int *colt
    argue should be detected and handled by the stalling monitor routine. */
 STATIC MYBOOL verify_stability(lprec *lp, MYBOOL isprimal, REAL xfeas, REAL sfeas, int nfeas)
 {
-  MYBOOL testOK = TRUE;
+  MYBOOL testOK = FTRUE;
   return( testOK );
 
 #if 1
@@ -788,7 +788,7 @@ STATIC MYBOOL verify_stability(lprec *lp, MYBOOL isprimal, REAL xfeas, REAL sfea
       idea is to relax the tolerance to account for this and only
       marginally weakening the (user-specified) tolerance. */
     if((sfeas-xfeas) < f*lp->epsprimal)
-      testOK = FALSE;
+      testOK = FFALSE;
   }
   return( testOK );
 }
@@ -805,7 +805,7 @@ STATIC int find_rowReplacement(lprec *lp, int rownr, REAL *prow, int *nzprow)
 
  /* Solve for "local reduced cost" */
   set_action(&lp->piv_strategy, PRICE_FORCEFULL);
-    compute_reducedcosts(lp, TRUE, rownr, NULL, TRUE,
+    compute_reducedcosts(lp, FTRUE, rownr, NULL, FTRUE,
                              prow, nzprow, NULL, NULL, MAT_ROUNDDEFAULT);
   clear_action(&lp->piv_strategy, PRICE_FORCEFULL);
 
@@ -824,7 +824,7 @@ STATIC int find_rowReplacement(lprec *lp, int rownr, REAL *prow, int *nzprow)
   if(i > lp->sum-abs(lp->P1extraDim))
     bestindex = 0;
   else
-    fsolve(lp, bestindex, prow, nzprow, lp->epsmachine, 1.0, TRUE);
+    fsolve(lp, bestindex, prow, nzprow, lp->epsmachine, 1.0, FTRUE);
 
   return( bestindex );
 }
@@ -835,7 +835,7 @@ STATIC int colprim(lprec *lp, REAL *drow, int *nzdrow, MYBOOL skipupdate, int pa
   int      i, ix, iy, iz, ninfeas, nloop = 0;
   REAL     f, sinfeas, xinfeas, epsvalue = lp->epsdual;
   pricerec current, candidate;
-  MYBOOL   collectMP = FALSE;
+  MYBOOL   collectMP = FFALSE;
   int      *coltarget = NULL;
 
   /* Identify pivot column according to pricing strategy; set
@@ -843,9 +843,9 @@ STATIC int colprim(lprec *lp, REAL *drow, int *nzdrow, MYBOOL skipupdate, int pa
   current.pivot    = lp->epsprimal;    /* Minimum acceptable improvement */
   current.varno    = 0;
   current.lp       = lp;
-  current.isdual   = FALSE;
+  current.isdual   = FFALSE;
   candidate.lp     = lp;
-  candidate.isdual = FALSE;
+  candidate.isdual = FFALSE;
   *candidatecount  = 0;
 
   /* Update local value of pivot setting and determine active multiple pricing set */
@@ -859,7 +859,7 @@ doLoop:
       coltarget = NULL;
     }
     else
-      coltarget = multi_indexSet(lp->multivars, FALSE);
+      coltarget = multi_indexSet(lp->multivars, FFALSE);
   }
 
   /* Compute reduced costs c - c*Inv(B), if necessary
@@ -869,7 +869,7 @@ doLoop:
     /* Recompute from scratch only at the beginning, otherwise update */
     if((lp->current_iter > 0) && (refactRecent(lp) == AUTOMATIC))
 #endif
-    compute_reducedcosts(lp, FALSE, 0, coltarget, (MYBOOL) ((nloop <= 1) || (partialloop > 1)),
+    compute_reducedcosts(lp, FFALSE, 0, coltarget, (MYBOOL) ((nloop <= 1) || (partialloop > 1)),
                              NULL, NULL,
                              drow, nzdrow,
                              MAT_ROUNDDEFAULT);
@@ -908,7 +908,7 @@ doLoop:
     ninfeas++;
     SETMAX(xinfeas, f);
     sinfeas += f;
-    candidate.pivot = normalizeEdge(lp, i, f, FALSE);
+    candidate.pivot = normalizeEdge(lp, i, f, FFALSE);
     candidate.varno = i;
     if(findImprovementVar(&current, &candidate, collectMP, candidatecount))
       break;
@@ -920,11 +920,11 @@ doLoop:
       if(!lp->multivars->sorted)
         lp->multivars->sorted = QS_execute(lp->multivars->sortedList, lp->multivars->used,
                                            (findCompare_func *) compareImprovementQS, NULL);
-      coltarget = multi_indexSet(lp->multivars, TRUE);
+      coltarget = multi_indexSet(lp->multivars, FTRUE);
     }
     else if((current.varno == 0) && (lp->multivars->retries == 0)) {
-      ix = partial_blockStart(lp, FALSE);
-      iy = partial_blockEnd(lp, FALSE);
+      ix = partial_blockStart(lp, FFALSE);
+      iy = partial_blockEnd(lp, FFALSE);
       lp->multivars->used = 0;
       lp->multivars->retries++;
       goto doLoop;
@@ -941,7 +941,7 @@ doLoop:
   if(updateinfeas)
     lp->suminfeas = fabs(sinfeas);
   if((lp->multivars == NULL) && (current.varno > 0) &&
-     !verify_stability(lp, TRUE, xinfeas, sinfeas, ninfeas))
+     !verify_stability(lp, FTRUE, xinfeas, sinfeas, ninfeas))
     current.varno = 0;
 
   /* Produce statistics */
@@ -963,7 +963,7 @@ STATIC int rowprim(lprec *lp, int colnr, LREAL *theta, REAL *pcol, int *nzpcol, 
   LREAL    f, savef;
   REAL     Heps, Htheta, Hlimit, epsvalue, epspivot, p = 0.0;
   pricerec current, candidate;
-  MYBOOL   isupper = !lp->is_lower[colnr], HarrisTwoPass = FALSE;
+  MYBOOL   isupper = !lp->is_lower[colnr], HarrisTwoPass = FFALSE;
 
   /* Update local value of pivot setting */
   lp->_piv_rule_ = get_piv_rule(lp);
@@ -1039,11 +1039,11 @@ Retry:
   current.theta    = lp->infinite;
   current.pivot    = 0;
   current.varno    = 0;
-  current.isdual   = FALSE;
+  current.isdual   = FFALSE;
   current.epspivot = epspivot;
   current.lp       = lp;
   candidate.epspivot = epspivot;
-  candidate.isdual = FALSE;
+  candidate.isdual = FFALSE;
   candidate.lp     = lp;
   savef  = 0;
   for(; Hpass <= 2; Hpass++) {
@@ -1073,7 +1073,7 @@ Retry:
       candidate.varno = i;
 
       /*i =*/ compute_theta(lp, i, &candidate.theta, isupper,
-                            my_if(lp->upbo[lp->var_basic[i]] < lp->epsprimal, Heps/10, Heps), TRUE);
+                            my_if(lp->upbo[lp->var_basic[i]] < lp->epsprimal, Heps/10, Heps), FTRUE);
 
       if(fabs(candidate.theta) >= lp->infinite) {
         savef = f;
@@ -1133,7 +1133,7 @@ Retry:
         i++;
       if(i > lp->rows) { /* Empty column with upper bound! */
         lp->is_lower[colnr] = !lp->is_lower[colnr];
-/*        lp->is_lower[colnr] = FALSE; */
+/*        lp->is_lower[colnr] = FFALSE; */
         lp->rhs[0] += lp->upbo[colnr]*pcol[0];
       }
       else /* if(pcol[i]<0) */
@@ -1151,7 +1151,7 @@ Retry:
 
  /* Return working array to pool */
   if(nzpcol == NULL)
-    mempool_releaseVector(lp->workarrays, (char *) nzlist, FALSE);
+    mempool_releaseVector(lp->workarrays, (char *) nzlist, FFALSE);
 
   if(lp->spx_trace)
     report(lp, DETAILED, "row_prim: %d, pivot size = " RESULTVALUEMASK "\n",
@@ -1172,7 +1172,7 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
   REAL      up, lo = 0,
             epsvalue, sinfeas, xinfeas;
   pricerec  current, candidate;
-  MYBOOL    collectMP = FALSE;
+  MYBOOL    collectMP = FFALSE;
 
   /* Initialize */
   if(rhvec == NULL)
@@ -1181,9 +1181,9 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
   current.pivot    = -epsvalue;  /* Initialize leaving variable threshold; "less than 0" */
   current.theta    = 0;
   current.varno    = 0;
-  current.isdual   = TRUE;
+  current.isdual   = FTRUE;
   current.lp       = lp;
-  candidate.isdual = TRUE;
+  candidate.isdual = FTRUE;
   candidate.lp     = lp;
 
   /* Loop over active partial row set */
@@ -1192,8 +1192,8 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
     iy = lp->rows;
   }
   else {
-    k = partial_blockStart(lp, TRUE);
-    iy = partial_blockEnd(lp, TRUE);
+    k = partial_blockStart(lp, FTRUE);
+    iy = partial_blockEnd(lp, FTRUE);
   }
   ninfeas = 0;
   xinfeas = 0;
@@ -1228,7 +1228,7 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
       KE version skips uninteresting alternatives and gives a noticeable speedup */
 /*    if((rh < -epsvalue*sqrt(lp->matA->rowmax[i])) || */
     if((rh < -epsvalue) ||
-       ((forceoutEQ == TRUE) && (up < epsvalue))) {  /* It causes instability to remove the "TRUE" test */
+       ((forceoutEQ == FTRUE) && (up < epsvalue))) {  /* It causes instability to remove the "FTRUE" test */
 
      /* Accumulate stats */
       ninfeas++;
@@ -1238,7 +1238,7 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
      /* Give a slight preference to fixed variables (mainly equality slacks) */
       if(up < epsvalue) {
         /* Break out immediately if we are directed to force slacks out of the basis */
-        if(forceoutEQ == TRUE) {
+        if(forceoutEQ == FTRUE) {
           current.varno = i;
           current.pivot = -1;
           break;
@@ -1251,7 +1251,7 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
       }
 
      /* Select leaving variable according to strategy (the most negative/largest violation) */
-      candidate.pivot = normalizeEdge(lp, i, rh, TRUE);
+      candidate.pivot = normalizeEdge(lp, i, rh, FTRUE);
       candidate.varno = i;
       if(findImprovementVar(&current, &candidate, collectMP, NULL))
         break;
@@ -1262,7 +1262,7 @@ STATIC int rowdual(lprec *lp, REAL *rhvec, MYBOOL forceoutEQ, MYBOOL updateinfea
   if(updateinfeas)
     lp->suminfeas = fabs(sinfeas);
   if((ninfeas > 1) &&
-     !verify_stability(lp, FALSE, xinfeas, sinfeas, ninfeas)) {
+     !verify_stability(lp, FFALSE, xinfeas, sinfeas, ninfeas)) {
     report(lp, IMPORTANT, "rowdual: Check for reduced accuracy and tolerance settings.\n");
     current.varno = 0;
   }
@@ -1291,33 +1291,33 @@ STATIC void longdual_testset(lprec *lp, int which, int rownr, REAL *prow, int *n
   int i,j;
   REAL F = lp->infinite;
   if(which == 0) {             /* Maros Example-1 - raw data */
-    j =  1; i = lp->rows+j; lp->upbo[i] = 0;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  2; drow[i] = -1;
-    j =  2; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -2; drow[i] =  2;
-    j =  3; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  1; drow[i] =  5;
-    j =  4; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] =  3; drow[i] = -6;
-    j =  5; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] = -4; drow[i] = -2;
-    j =  6; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  0;
-    j =  7; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] =  1; drow[i] =  0;
-    j =  8; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] = -2; drow[i] =  0;
-    j =  9; i = lp->rows+j; lp->upbo[i] = 5;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  4;
-    j = 10; i = lp->rows+j; lp->upbo[i] = F;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -2; drow[i] = 10;
+    j =  1; i = lp->rows+j; lp->upbo[i] = 0;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  2; drow[i] = -1;
+    j =  2; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -2; drow[i] =  2;
+    j =  3; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  1; drow[i] =  5;
+    j =  4; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] =  3; drow[i] = -6;
+    j =  5; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] = -4; drow[i] = -2;
+    j =  6; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  0;
+    j =  7; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] =  1; drow[i] =  0;
+    j =  8; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] = -2; drow[i] =  0;
+    j =  9; i = lp->rows+j; lp->upbo[i] = 5;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  4;
+    j = 10; i = lp->rows+j; lp->upbo[i] = F;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -2; drow[i] = 10;
     nzprow[0] = i-lp->rows;
     lp->rhs[rownr] = -11;
     lp->upbo[lp->var_basic[rownr]] = F;
     lp->rhs[0] = 1;
   }
   else if(which == 1) {       /* Maros Example-1 - presorted in correct order */
-    j =  1; i = lp->rows+j; lp->upbo[i] = 0;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  2; drow[i] = -1;
-    j =  2; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  1; drow[i] =  5;
-    j =  3; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] = -4; drow[i] = -2;
-    j =  4; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] = -2; drow[i] =  0;
+    j =  1; i = lp->rows+j; lp->upbo[i] = 0;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  2; drow[i] = -1;
+    j =  2; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  1; drow[i] =  5;
+    j =  3; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] = -4; drow[i] = -2;
+    j =  4; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] = -2; drow[i] =  0;
 
-    j =  5; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  0;
-    j =  6; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] =  1; drow[i] =  0;
-    j =  7; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -2; drow[i] =  2;
-    j =  8; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] =  3; drow[i] = -6;
-    j =  9; i = lp->rows+j; lp->upbo[i] = 5;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  4;
-    j = 10; i = lp->rows+j; lp->upbo[i] = F;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -2; drow[i] = 10;
+    j =  5; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  0;
+    j =  6; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] =  1; drow[i] =  0;
+    j =  7; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -2; drow[i] =  2;
+    j =  8; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] =  3; drow[i] = -6;
+    j =  9; i = lp->rows+j; lp->upbo[i] = 5;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -1; drow[i] =  4;
+    j = 10; i = lp->rows+j; lp->upbo[i] = F;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -2; drow[i] = 10;
     nzprow[0] = i-lp->rows;
     lp->rhs[rownr] = -11;
     lp->upbo[lp->var_basic[rownr]] = F;
@@ -1325,12 +1325,12 @@ STATIC void longdual_testset(lprec *lp, int which, int rownr, REAL *prow, int *n
   }
 
   else if(which == 10) {       /* Maros Example-2 - raw data */
-    j =  1; i = lp->rows+j; lp->upbo[i] = 5;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] = -2; drow[i] =  2;
-    j =  2; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  3; drow[i] =  3;
-    j =  3; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] = -2; drow[i] =  0;
-    j =  4; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] = FALSE; nzprow[j] = i; prow[i] = -1; drow[i] = -2;
-    j =  5; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  1; drow[i] =  0;
-    j =  6; i = lp->rows+j; lp->upbo[i] = F;  lp->is_lower[i] =  TRUE; nzprow[j] = i; prow[i] =  3; drow[i] =  9;
+    j =  1; i = lp->rows+j; lp->upbo[i] = 5;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] = -2; drow[i] =  2;
+    j =  2; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  3; drow[i] =  3;
+    j =  3; i = lp->rows+j; lp->upbo[i] = 1;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] = -2; drow[i] =  0;
+    j =  4; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] = FFALSE; nzprow[j] = i; prow[i] = -1; drow[i] = -2;
+    j =  5; i = lp->rows+j; lp->upbo[i] = 2;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  1; drow[i] =  0;
+    j =  6; i = lp->rows+j; lp->upbo[i] = F;  lp->is_lower[i] =  FTRUE; nzprow[j] = i; prow[i] =  3; drow[i] =  9;
     nzprow[0] = i-lp->rows;
     lp->rhs[rownr] = 14;
     lp->upbo[lp->var_basic[rownr]] = 2;
@@ -1354,22 +1354,22 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
   REAL     epsvalue = lp->epsvalue;
 #endif
   pricerec current, candidate;
-  MYBOOL   isbatch = FALSE, /* Requires that lp->longsteps->size > lp->sum */
+  MYBOOL   isbatch = FFALSE, /* Requires that lp->longsteps->size > lp->sum */
            dolongsteps = (MYBOOL) (lp->longsteps != NULL);
 
   /* Initialize */
   if(xviol != NULL)
     *xviol = lp->infinite;
   if(dolongsteps && !dualphase1)
-    dolongsteps = AUTOMATIC;  /* Sets Phase1 = TRUE, Phase2 = AUTOMATIC */
+    dolongsteps = AUTOMATIC;  /* Sets Phase1 = FTRUE, Phase2 = AUTOMATIC */
   current.theta    = lp->infinite;
   current.pivot    = 0;
   current.varno    = 0;
   current.epspivot = epspivot;
-  current.isdual   = TRUE;
+  current.isdual   = FTRUE;
   current.lp       = lp;
   candidate.epspivot = epspivot;
-  candidate.isdual = TRUE;
+  candidate.isdual = FTRUE;
   candidate.lp     = lp;
   *candidatecount  = 0;
 
@@ -1378,13 +1378,13 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
 #ifdef UseDualReducedCostUpdate
     /* Recompute from scratch only at the beginning, otherwise update */
     if((lp->current_iter > 0) && (refactRecent(lp) < AUTOMATIC))
-      compute_reducedcosts(lp, TRUE, row_nr, NULL, TRUE,
+      compute_reducedcosts(lp, FTRUE, row_nr, NULL, FTRUE,
                                prow, nzprow,
                                NULL, NULL,
                                MAT_ROUNDDEFAULT);
     else
 #endif
-      compute_reducedcosts(lp, TRUE, row_nr, NULL, TRUE,
+      compute_reducedcosts(lp, FTRUE, row_nr, NULL, FTRUE,
                                prow, nzprow,
                                drow, nzdrow,
                                MAT_ROUNDDEFAULT);
@@ -1479,7 +1479,7 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
   /* Initialize the long-step structures if indicated */
   if(dolongsteps) {
     if((nzprow[0] <= 1) || (nbound == 0)) {  /* Don't bother */
-      dolongsteps = FALSE;
+      dolongsteps = FFALSE;
       lp->longsteps->indexSet[0] = 0;
     }
     else {
@@ -1565,7 +1565,7 @@ STATIC int partial_findBlocks(lprec *lp, MYBOOL autodefine, MYBOOL isrow)
 
   blockdata = IF(isrow, lp->rowblocks, lp->colblocks);
   items     = IF(isrow, lp->rows, lp->columns);
-  allocREAL(lp, &sum, items+1, FALSE);
+  allocREAL(lp, &sum, items+1, FFALSE);
 
   /* Loop over items and compute the average column index for each */
   sum[0] = 0;
@@ -1693,14 +1693,14 @@ STATIC MYBOOL partial_blockStep(lprec *lp, MYBOOL isrow)
 
   blockdata = IF(isrow, lp->rowblocks, lp->colblocks);
   if(blockdata == NULL)
-    return( FALSE );
+    return( FFALSE );
   else if(blockdata->blocknow < blockdata->blockcount) {
     blockdata->blocknow++;
-    return( TRUE);
+    return( FTRUE);
   }
   else {
     blockdata->blocknow = 1;
-    return( TRUE );
+    return( FTRUE );
   }
 }
 STATIC MYBOOL partial_isVarActive(lprec *lp, int varno, MYBOOL isrow)
@@ -1709,7 +1709,7 @@ STATIC MYBOOL partial_isVarActive(lprec *lp, int varno, MYBOOL isrow)
 
   blockdata = IF(isrow, lp->rowblocks, lp->colblocks);
   if(blockdata == NULL)
-    return( TRUE );
+    return( FTRUE );
   else {
     return( (MYBOOL) ((varno >= blockdata->blockend[blockdata->blocknow-1]) &&
                       (varno < blockdata->blockend[blockdata->blocknow])) );
@@ -1750,7 +1750,7 @@ STATIC MYBOOL multi_mustupdate(multirec *multi)
 }
 STATIC MYBOOL multi_resize(multirec *multi, int blocksize, int blockdiv, MYBOOL doVlist, MYBOOL doIset)
 {
-  MYBOOL ok = TRUE;
+  MYBOOL ok = FTRUE;
 
   if((blocksize > 1) && (blockdiv > 0)) {
     int oldsize = multi->size;
@@ -1820,8 +1820,8 @@ STATIC int multi_restart(multirec *multi)
   int i, n = multi->used;
 
   multi->used   = 0;
-  multi->sorted = FALSE;
-  multi->dirty  = FALSE;
+  multi->sorted = FFALSE;
+  multi->dirty  = FFALSE;
   if(multi->freeList != NULL) {
     for(i = 1; i <= multi->size; i++)
       multi->freeList[i] = multi->size - i;
@@ -1947,10 +1947,10 @@ STATIC MYBOOL multi_recompute(multirec *multi, int index, MYBOOL isphase2, MYBOO
   }
   multi->used  = index;
   if(multi->sorted && (index == 1))
-    multi->sorted = FALSE;
-  multi->dirty = FALSE;
+    multi->sorted = FFALSE;
+  multi->dirty = FFALSE;
 
-  /* Return TRUE if the step is now positive */
+  /* Return FTRUE if the step is now positive */
   return( (MYBOOL) (multi->step_last >= multi->epszero) );
 }
 
@@ -1965,19 +1965,19 @@ STATIC MYBOOL multi_removevar(multirec *multi, int varnr)
   int *coltarget = multi->indexSet;
 
   if(coltarget == NULL)
-    return( FALSE );
+    return( FFALSE );
 
   while((i <= multi->used) && (coltarget[i] != varnr))
     i++;
   if(i > multi->used)
-    return( FALSE );
+    return( FFALSE );
 
   for(; i < multi->used; i++)
     coltarget[i] = coltarget[i+1];
   coltarget[0]--;
   multi->used--;
-  multi->dirty = TRUE;
-  return( TRUE );
+  multi->dirty = FTRUE;
+  return( FTRUE );
 }
 
 STATIC int multi_enteringvar(multirec *multi, pricerec *current, int priority)
@@ -2050,7 +2050,7 @@ Finish:
 #if 0
 /*    if(lp->upbo[colnr] >= lp->infinite) */
     QS_swap(multi->sortedList, bestindex, multi->used-1);
-    multi_recompute(multi, bestindex, (bestcand->isdual == AUTOMATIC), TRUE);
+    multi_recompute(multi, bestindex, (bestcand->isdual == AUTOMATIC), FTRUE);
 #else
     multi->used = i + 1;
 #endif
@@ -2084,7 +2084,7 @@ STATIC int multi_populateSet(multirec *multi, int **list, int excludenr)
   if(list == NULL)
     list = &(multi->indexSet);
   if((multi->used > 0) &&
-     ((*list != NULL) || allocINT(multi->lp, list, multi->size+1, FALSE))) {
+     ((*list != NULL) || allocINT(multi->lp, list, multi->size+1, FFALSE))) {
     int i, colnr;
 
     for(i = 0; i < multi->used; i++) {

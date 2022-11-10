@@ -309,7 +309,7 @@ MYBOOL REPORT_debugdump(lprec *lp, char *filename, MYBOOL livedata)
                   lp->rows, lp->equalities, get_Lrows(lp), lp->columns,
       lp->int_vars, lp->sc_vars, SOS_count(lp), GUB_count(lp));
   fprintf(output, "Data size:      %d model non-zeros, %d invB non-zeros (engine is %s)\n",
-                  get_nonzeros(lp), my_if(lp->invB == NULL, 0, lp->bfp_nonzeros(lp, FALSE)), lp->bfp_name());
+                  get_nonzeros(lp), my_if(lp->invB == NULL, 0, lp->bfp_nonzeros(lp, FFALSE)), lp->bfp_name());
   fprintf(output, "Internal sizes: %d rows allocated, %d columns allocated, %d columns used, %d eta length\n",
                   lp->rows_alloc, lp->columns_alloc, lp->columns, my_if(lp->invB == NULL, 0, lp->bfp_colcount(lp)));
   fprintf(output, "Memory use:     %d sparse matrix, %d eta\n",
@@ -330,14 +330,14 @@ MYBOOL REPORT_debugdump(lprec *lp, char *filename, MYBOOL livedata)
   blockWriteREAL(output, "orig_lowbo", lp->orig_lowbo, 0, lp->sum);
   blockWriteREAL(output, "orig_upbo", lp->orig_upbo, 0, lp->sum);
   blockWriteINT(output,  "row_type", lp->row_type, 0, lp->rows);
-  blockWriteBOOL(output, "var_type", lp->var_type, 0, lp->columns, TRUE);
+  blockWriteBOOL(output, "var_type", lp->var_type, 0, lp->columns, FTRUE);
   blockWriteAMAT(output, "A", lp, 0, lp->rows);
 
   if(livedata) {
     fprintf(output, "\nPROCESS DATA\n------------\n\n");
     blockWriteREAL(output,  "Active rhs", lp->rhs, 0, lp->rows);
     blockWriteINT(output,  "Basic variables", lp->var_basic, 0, lp->rows);
-    blockWriteBOOL(output, "is_basic", lp->is_basic, 0, lp->sum, TRUE);
+    blockWriteBOOL(output, "is_basic", lp->is_basic, 0, lp->sum, FTRUE);
     blockWriteREAL(output, "lowbo", lp->lowbo, 0, lp->sum);
     blockWriteREAL(output, "upbo", lp->upbo, 0, lp->sum);
     if(lp->scalars != NULL)
@@ -602,16 +602,16 @@ MYBOOL REPORT_tableau(lprec *lp)
   FILE *stream = lp->outstream;
 
   if(lp->outstream == NULL)
-    return(FALSE);
+    return(FFALSE);
 
   if(!lp->model_is_valid || !has_BFP(lp) ||
      (get_total_iter(lp) == 0) || (lp->spx_status == NOTRUN)) {
     lp->spx_status = NOTRUN;
-    return(FALSE);
+    return(FFALSE);
   }
-  if(!allocREAL(lp, &prow,lp->sum + 1, TRUE)) {
+  if(!allocREAL(lp, &prow,lp->sum + 1, FTRUE)) {
     lp->spx_status = NOMEMORY;
-    return(FALSE);
+    return(FFALSE);
   }
 
   fprintf(stream, "\n");
@@ -626,9 +626,9 @@ MYBOOL REPORT_tableau(lprec *lp)
   fprintf(stream, "\n");
 
   coltarget = (int *) mempool_obtainVector(lp->workarrays, lp->columns+1, sizeof(*coltarget));
-  if(!get_colIndexA(lp, SCAN_USERVARS+USE_NONBASICVARS, coltarget, FALSE)) {
-    mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
-    return(FALSE);
+  if(!get_colIndexA(lp, SCAN_USERVARS+USE_NONBASICVARS, coltarget, FFALSE)) {
+    mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
+    return(FFALSE);
   }
   for(row_nr = 1; (row_nr <= lp->rows + 1); row_nr++) {
     if (row_nr <= lp->rows)
@@ -652,9 +652,9 @@ MYBOOL REPORT_tableau(lprec *lp)
   }
   fflush(stream);
 
-  mempool_releaseVector(lp->workarrays, (char *) coltarget, FALSE);
+  mempool_releaseVector(lp->workarrays, (char *) coltarget, FFALSE);
   FREE(prow);
-  return(TRUE);
+  return(FTRUE);
 }
 
 void REPORT_constraintinfo(lprec *lp, char *datainfo)
@@ -717,7 +717,7 @@ MYBOOL REPORT_mat_mmsave(lprec *lp, char *filename, int *colndx, MYBOOL includeO
   /* Compute column and non-zero counts */
   if(colndx == lp->var_basic) {
     if(!lp->basis_valid)
-      return( FALSE );
+      return( FFALSE );
     m = lp->rows;
   }
   else if(colndx != NULL)
@@ -754,8 +754,8 @@ MYBOOL REPORT_mat_mmsave(lprec *lp, char *filename, int *colndx, MYBOOL includeO
   mm_write_mtx_crd_size(output, n+kk, m, nz+(colndx == lp->var_basic ? 1 : 0));
 
   /* Allocate working arrays for sparse column storage */
-  allocREAL(lp, &acol, n+2, FALSE);
-  allocINT(lp, &nzlist, n+2, FALSE);
+  allocREAL(lp, &acol, n+2, FFALSE);
+  allocINT(lp, &nzlist, n+2, FFALSE);
 
   /* Write the matrix non-zero values column-by-column.
      NOTE: matrixMarket files use 1-based indeces,

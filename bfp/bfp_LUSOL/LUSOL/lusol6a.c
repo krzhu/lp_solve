@@ -305,7 +305,7 @@ void LU6CHK(LUSOLrec *LUSOL, int MODE, int LENA2, int *INFORM)
       }
     }
   }
-  else { /* keepLU = FALSE */
+  else { /* keepLU = FFALSE */
     for(K = 1; K <= LUSOL->n; K++) {
       J = LUSOL->iq[K];
       DIAG = LUSOL->w[J];

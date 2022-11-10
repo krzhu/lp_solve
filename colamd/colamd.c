@@ -118,7 +118,7 @@
 
     Changes from Version 2.0 to 2.1:
 
-	* TRUE and FALSE are predefined on some systems, so they are defined
+	* FTRUE and FFALSE are predefined on some systems, so they are defined
 		here only if not already defined.
 	
 	* web site changed
@@ -222,7 +222,7 @@
 	    
 	Returns:
 
-	    TRUE (1) if successful, FALSE (0) otherwise.
+	    FTRUE (1) if successful, FFALSE (0) otherwise.
 
 	Arguments:
 
@@ -230,19 +230,19 @@
 
 		Number of rows in the matrix A.
 		Restriction:  n_row >= 0.
-		Colamd returns FALSE if n_row is negative.
+		Colamd returns FFALSE if n_row is negative.
 
 	    int n_col ;		Input argument.
 
 		Number of columns in the matrix A.
 		Restriction:  n_col >= 0.
-		Colamd returns FALSE if n_col is negative.
+		Colamd returns FFALSE if n_col is negative.
 
 	    int Alen ;		Input argument.
 
 		Restriction (see note):
 		Alen >= 2*nnz + 6*(n_col+1) + 4*(n_row+1) + n_col
-		Colamd returns FALSE if these conditions are not met.
+		Colamd returns FFALSE if these conditions are not met.
 
 		Note:  this restriction makes an modest assumption regarding
 		the size of the two typedef's structures in colamd.h.
@@ -275,7 +275,7 @@
 
 		The matrix is 0-based.  That is, rows are in the range 0 to
 		n_row-1, and columns are in the range 0 to n_col-1.  Colamd
-		returns FALSE if any row index is out of range.
+		returns FFALSE if any row index is out of range.
 
 		The contents of A are modified during ordering, and are
 		undefined on output.
@@ -288,16 +288,16 @@
 		entry, p [0], must be zero, and p [c] <= p [c+1] must hold
 		for all c in the range 0 to n_col-1.  The value p [n_col] is
 		thus the total number of entries in the pattern of the matrix A.
-		Colamd returns FALSE if these conditions are not met.
+		Colamd returns FFALSE if these conditions are not met.
 
-		On output, if colamd returns TRUE, the array p holds the column
+		On output, if colamd returns FTRUE, the array p holds the column
 		permutation (Q, for P(AQ)=LU or (AQ)'(AQ)=LL'), where p [0] is
 		the first column index in the new ordering, and p [n_col-1] is
 		the last.  That is, p [k] = j means that column j of A is the
 		kth pivot column, in AQ, where k is in the range 0 to n_col-1
 		(p [0] = j means that column j of A is the first column in AQ).
 
-		If colamd returns FALSE, then no permutation is returned, and
+		If colamd returns FFALSE, then no permutation is returned, and
 		p is undefined on output.
 
 	    double knobs [COLAMD_KNOBS] ;	Input argument.
@@ -308,7 +308,7 @@
 
 		Statistics on the ordering, and error status.
 		See colamd.h for related definitions.
-		Colamd returns FALSE if stats is not present.
+		Colamd returns FFALSE if stats is not present.
 
 		stats [0]:  number of dense or empty rows ignored.
 
@@ -335,7 +335,7 @@
 				had to do some extra work to sort the matrix
 				first and remove duplicate entries, but it
 				still was able to return a valid permutation
-				(return value of colamd was TRUE).
+				(return value of colamd was FTRUE).
 
 					stats [4]: highest numbered column that
 						is unsorted or has duplicate
@@ -436,7 +436,7 @@
 
 	Returns:
 
-	    TRUE (1) if successful, FALSE (0) otherwise.
+	    FTRUE (1) if successful, FFALSE (0) otherwise.
 
 	Arguments:
 
@@ -444,7 +444,7 @@
 
 	    	Number of rows and columns in the symmetrix matrix A.
 		Restriction:  n >= 0.
-		Symamd returns FALSE if n is negative.
+		Symamd returns FFALSE if n is negative.
 
 	    int A [nnz] ;	Input argument.
 
@@ -458,7 +458,7 @@
 
 		The matrix is 0-based.  That is, rows are in the range 0 to
 		n-1, and columns are in the range 0 to n-1.  Symamd
-		returns FALSE if any row index is out of range.
+		returns FFALSE if any row index is out of range.
 
 		The contents of A are not modified.
 
@@ -470,13 +470,13 @@
 		entry, p [0], must be zero, and p [c] <= p [c+1] must hold
 		for all c in the range 0 to n-1.  The value p [n] is
 		thus the total number of entries in the pattern of the matrix A.
-		Symamd returns FALSE if these conditions are not met.
+		Symamd returns FFALSE if these conditions are not met.
 
 		The contents of p are not modified.
 
 	    int perm [n+1] ;   	Output argument.
 
-		On output, if symamd returns TRUE, the array perm holds the
+		On output, if symamd returns FTRUE, the array perm holds the
 		permutation P, where perm [0] is the first index in the new
 		ordering, and perm [n-1] is the last.  That is, perm [k] = j
 		means that row and column j of A is the kth column in PAP',
@@ -493,7 +493,7 @@
 
 		Statistics on the ordering, and error status.
 		See colamd.h for related definitions.
-		Symamd returns FALSE if stats is not present.
+		Symamd returns FFALSE if stats is not present.
 
 		stats [0]:  number of dense or empty row and columns ignored
 				(and ordered last in the output permutation 
@@ -517,7 +517,7 @@
 				had to do some extra work to sort the matrix
 				first and remove duplicate entries, but it
 				still was able to return a valid permutation
-				(return value of symamd was TRUE).
+				(return value of symamd was FTRUE).
 
 					stats [4]: highest numbered column that
 						is unsorted or has duplicate
@@ -703,15 +703,15 @@
 #define ONES_COMPLEMENT(r) (-(r)-1)
 
 /* -------------------------------------------------------------------------- */
-/* Change for version 2.1:  define TRUE and FALSE only if not yet defined */  
+/* Change for version 2.1:  define FTRUE and FFALSE only if not yet defined */  
 /* -------------------------------------------------------------------------- */
 
-#ifndef TRUE
-#define TRUE (1)
+#ifndef FTRUE
+#define FTRUE (1)
 #endif
 
-#ifndef FALSE
-#define FALSE (0)
+#ifndef FFALSE
+#define FFALSE (0)
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -1013,7 +1013,7 @@ PUBLIC void colamd_set_defaults
 /* === symamd =============================================================== */
 /* ========================================================================== */
 
-PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
+PUBLIC int symamd			/* return FTRUE if OK, FFALSE otherwise */
 (
     /* === Parameters ======================================================= */
 
@@ -1060,7 +1060,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
     if (!stats)
     {
 	DEBUG0 (("symamd: stats not present\n")) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
     for (i = 0 ; i < COLAMD_STATS ; i++)
     {
@@ -1074,14 +1074,14 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
     {
     	stats [COLAMD_STATUS] = COLAMD_ERROR_A_not_present ;
 	DEBUG0 (("symamd: A not present\n")) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     if (!p)		/* p is not present */
     {
 	stats [COLAMD_STATUS] = COLAMD_ERROR_p_not_present ;
 	DEBUG0 (("symamd: p not present\n")) ;
-    	return (FALSE) ;
+    	return (FFALSE) ;
     }
 
     if (n < 0)		/* n must be >= 0 */
@@ -1089,7 +1089,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	stats [COLAMD_STATUS] = COLAMD_ERROR_ncol_negative ;
 	stats [COLAMD_INFO1] = n ;
 	DEBUG0 (("symamd: n negative %d\n", n)) ;
-    	return (FALSE) ;
+    	return (FFALSE) ;
     }
 
     nnz = p [n] ;
@@ -1098,7 +1098,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	stats [COLAMD_STATUS] = COLAMD_ERROR_nnz_negative ;
 	stats [COLAMD_INFO1] = nnz ;
 	DEBUG0 (("symamd: number of entries negative %d\n", nnz)) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     if (p [0] != 0)
@@ -1106,7 +1106,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	stats [COLAMD_STATUS] = COLAMD_ERROR_p0_nonzero ;
 	stats [COLAMD_INFO1] = p [0] ;
 	DEBUG0 (("symamd: p[0] not zero %d\n", p [0])) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     /* === If no knobs, set default knobs =================================== */
@@ -1124,7 +1124,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
     {
 	stats [COLAMD_STATUS] = COLAMD_ERROR_out_of_memory ;
 	DEBUG0 (("symamd: allocate count (size %d) failed\n", n+1)) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     mark = (int *) ((*allocate) (n+1, sizeof (int))) ;
@@ -1133,7 +1133,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	stats [COLAMD_STATUS] = COLAMD_ERROR_out_of_memory ;
 	(*release) ((void *) count) ;
 	DEBUG0 (("symamd: allocate mark (size %d) failed\n", n+1)) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     /* === Compute column counts of M, check if A is valid ================== */
@@ -1159,7 +1159,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	    (*release) ((void *) count) ;
 	    (*release) ((void *) mark) ;
 	    DEBUG0 (("symamd: col %d negative length %d\n", j, length)) ;
-	    return (FALSE) ;
+	    return (FFALSE) ;
 	}
 
 	for (pp = p [j] ; pp < p [j+1] ; pp++)
@@ -1175,7 +1175,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 		(*release) ((void *) count) ;
 		(*release) ((void *) mark) ;
 		DEBUG0 (("symamd: row %d col %d out of bounds\n", i, j)) ;
-		return (FALSE) ;
+		return (FFALSE) ;
 	    }
 
 	    if (i <= last_row || mark [i] == j)
@@ -1237,7 +1237,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	(*release) ((void *) count) ;
 	(*release) ((void *) mark) ;
 	DEBUG0 (("symamd: allocate M (size %d) failed\n", Mlen)) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     k = 0 ;
@@ -1326,7 +1326,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 	stats [COLAMD_STATUS] = COLAMD_ERROR_internal_error ;
 	(*release) ((void *) M) ;
 	DEBUG0 (("symamd: internal error!\n")) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     /* Note that the output permutation is now in perm */
@@ -1342,7 +1342,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
 
     (*release) ((void *) M) ;
     DEBUG0 (("symamd: done.\n")) ;
-    return (TRUE) ;
+    return (FTRUE) ;
 
 }
 
@@ -1358,7 +1358,7 @@ PUBLIC int symamd			/* return TRUE if OK, FALSE otherwise */
     (AQ)'(AQ) = LL' remains sparse.
 */
 
-PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
+PUBLIC int colamd		/* returns FTRUE if successful, FFALSE otherwise*/
 (
     /* === Parameters ======================================================= */
 
@@ -1395,7 +1395,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
     if (!stats)
     {
 	DEBUG0 (("colamd: stats not present\n")) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
     for (i = 0 ; i < COLAMD_STATS ; i++)
     {
@@ -1409,14 +1409,14 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
     {
 	stats [COLAMD_STATUS] = COLAMD_ERROR_A_not_present ;
 	DEBUG0 (("colamd: A not present\n")) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     if (!p)		/* p is not present */
     {
 	stats [COLAMD_STATUS] = COLAMD_ERROR_p_not_present ;
 	DEBUG0 (("colamd: p not present\n")) ;
-    	return (FALSE) ;
+    	return (FFALSE) ;
     }
 
     if (n_row < 0)	/* n_row must be >= 0 */
@@ -1424,7 +1424,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
 	stats [COLAMD_STATUS] = COLAMD_ERROR_nrow_negative ;
 	stats [COLAMD_INFO1] = n_row ;
 	DEBUG0 (("colamd: nrow negative %d\n", n_row)) ;
-    	return (FALSE) ;
+    	return (FFALSE) ;
     }
 
     if (n_col < 0)	/* n_col must be >= 0 */
@@ -1432,7 +1432,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
 	stats [COLAMD_STATUS] = COLAMD_ERROR_ncol_negative ;
 	stats [COLAMD_INFO1] = n_col ;
 	DEBUG0 (("colamd: ncol negative %d\n", n_col)) ;
-    	return (FALSE) ;
+    	return (FFALSE) ;
     }
 
     nnz = p [n_col] ;
@@ -1441,7 +1441,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
 	stats [COLAMD_STATUS] = COLAMD_ERROR_nnz_negative ;
 	stats [COLAMD_INFO1] = nnz ;
 	DEBUG0 (("colamd: number of entries negative %d\n", nnz)) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     if (p [0] != 0)
@@ -1449,7 +1449,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
 	stats [COLAMD_STATUS] = COLAMD_ERROR_p0_nonzero	;
 	stats [COLAMD_INFO1] = p [0] ;
 	DEBUG0 (("colamd: p[0] not zero %d\n", p [0])) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     /* === If no knobs, set default knobs =================================== */
@@ -1473,7 +1473,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
 	stats [COLAMD_INFO1] = need ;
 	stats [COLAMD_INFO2] = Alen ;
 	DEBUG0 (("colamd: Need Alen >= %d, given only Alen = %d\n", need,Alen));
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     Alen -= Col_size + Row_size ;
@@ -1486,7 +1486,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
     {
 	/* input matrix is invalid */
 	DEBUG0 (("colamd: Matrix invalid\n")) ;
-	return (FALSE) ;
+	return (FFALSE) ;
     }
 
     /* === Initialize scores, kill dense rows/columns ======================= */
@@ -1509,7 +1509,7 @@ PUBLIC int colamd		/* returns TRUE if successful, FALSE otherwise*/
     stats [COLAMD_DENSE_COL] = n_col - n_col2 ;
     stats [COLAMD_DEFRAG_COUNT] = ngarbage ;
     DEBUG0 (("colamd: done.\n")) ; 
-    return (TRUE) ;
+    return (FTRUE) ;
 }
 
 
@@ -1556,11 +1556,11 @@ PUBLIC void symamd_report
     matrix.  Also, row and column attributes are stored in the Col and Row
     structs.  If the columns are un-sorted or contain duplicate row indices,
     this routine will also sort and remove duplicate row indices from the
-    column form of the matrix.  Returns FALSE if the matrix is invalid,
-    TRUE otherwise.  Not user-callable.
+    column form of the matrix.  Returns FFALSE if the matrix is invalid,
+    FTRUE otherwise.  Not user-callable.
 */
 
-PRIVATE int init_rows_cols	/* returns TRUE if OK, or FALSE otherwise */
+PRIVATE int init_rows_cols	/* returns FTRUE if OK, or FFALSE otherwise */
 (
     /* === Parameters ======================================================= */
 
@@ -1597,7 +1597,7 @@ PRIVATE int init_rows_cols	/* returns TRUE if OK, or FALSE otherwise */
 	    stats [COLAMD_INFO1] = col ;
 	    stats [COLAMD_INFO2] = Col [col].length ;
 	    DEBUG0 (("colamd: col %d length %d < 0\n", col, Col [col].length)) ;
-	    return (FALSE) ;
+	    return (FFALSE) ;
 	}
 
 	Col [col].shared1.thickness = 1 ;
@@ -1637,7 +1637,7 @@ PRIVATE int init_rows_cols	/* returns TRUE if OK, or FALSE otherwise */
 		stats [COLAMD_INFO2] = row ;
 		stats [COLAMD_INFO3] = n_row ;
 		DEBUG0 (("colamd: row %d col %d out of bounds\n", row, col)) ;
-		return (FALSE) ;
+		return (FFALSE) ;
 	    }
 
 	    if (row <= last_row || Row [row].shared2.mark == col)
@@ -1784,7 +1784,7 @@ PRIVATE int init_rows_cols	/* returns TRUE if OK, or FALSE otherwise */
 
     /* === Done.  Matrix is not (or no longer) jumbled ====================== */
 
-    return (TRUE) ;
+    return (FTRUE) ;
 }
 
 

@@ -13,7 +13,7 @@
 /* ************************************************************************ */
 /* Initialize BLAS interfacing routines                                     */
 /* ************************************************************************ */
-MYBOOL mustinitBLAS = TRUE;
+MYBOOL mustinitBLAS = FTRUE;
 #if (defined WIN32) || (defined WIN64)
   HINSTANCE hBLAS = NULL;
 #else
@@ -43,7 +43,7 @@ void init_BLAS(void)
 {
   if(mustinitBLAS) {
     load_BLAS(NULL);
-    mustinitBLAS = FALSE;
+    mustinitBLAS = FFALSE;
   }
 }
 
@@ -52,13 +52,13 @@ MYBOOL is_nativeBLAS(void)
 #ifdef LoadableBlasLib
   return( (MYBOOL) (hBLAS == NULL) );
 #else
-  return( TRUE );
+  return( FTRUE );
 #endif
 }
 
 MYBOOL load_BLAS(char *libname)
 {
-  MYBOOL result = TRUE;
+  MYBOOL result = FTRUE;
 
 #ifdef LoadableBlasLib
   if(hBLAS != NULL) {
@@ -68,7 +68,7 @@ MYBOOL load_BLAS(char *libname)
 
   if(libname == NULL) {
     if(!mustinitBLAS && is_nativeBLAS())
-      return( FALSE );
+      return( FFALSE );
     BLAS_dscal = my_dscal;
     BLAS_dcopy = my_dcopy;
     BLAS_daxpy = my_daxpy;
@@ -79,7 +79,7 @@ MYBOOL load_BLAS(char *libname)
     BLAS_dload = my_dload;
     BLAS_dnormi = my_dnormi;
     if(mustinitBLAS)
-      mustinitBLAS = FALSE;
+      mustinitBLAS = FFALSE;
   }
   else {
 #ifdef LoadableBlasLib
@@ -89,7 +89,7 @@ MYBOOL load_BLAS(char *libname)
    /* First standardize UNIX .SO library name format. */
     char blasname[260];
     if(!so_stdname(blasname, libname, 260))
-      return( FALSE );
+      return( FFALSE );
   #endif
    /* Get a handle to the Windows DLL module. */
     hBLAS = my_LoadLibrary(blasname);
@@ -123,7 +123,7 @@ MYBOOL load_BLAS(char *libname)
         (BLAS_dnormi == NULL))
       ) {
       load_BLAS(NULL);
-      result = FALSE;
+      result = FFALSE;
     }
   }
   return( result );

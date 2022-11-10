@@ -30,23 +30,23 @@
 
 STATIC MYBOOL includeMDO(MYBOOL *usedpos, int item)
 {
-/*  Legend:   TRUE            => A basic slack variable already in the basis
-              FALSE           => A column free for being pivoted in
-              AUTOMATIC+TRUE  => A row-singleton user column pivoted into the basis
-              AUTOMATIC+FALSE => A column-singleton user column pivoted into the basis */
+/*  Legend:   FTRUE            => A basic slack variable already in the basis
+              FFALSE           => A column free for being pivoted in
+              AUTOMATIC+FTRUE  => A row-singleton user column pivoted into the basis
+              AUTOMATIC+FFALSE => A column-singleton user column pivoted into the basis */
 
   /* Handle case where we are processing all columns */
   if(usedpos == NULL)
-    return( TRUE );
+    return( FTRUE );
     
   else {
   /* Otherwise do the selective case */
     MYBOOL test = usedpos[item];
 #if 1
-    return( test != TRUE );
+    return( test != FTRUE );
 #else
-    test = test & TRUE;
-    return( test == FALSE );
+    test = test & FTRUE;
+    return( test == FFALSE );
 #endif
   }
 }
@@ -156,7 +156,7 @@ void mdo_free(void *mem)
 
 int __WINAPI getMDO(lprec *lp, MYBOOL *usedpos, int *colorder, int *size, MYBOOL symmetric)
 {
-  int    error = FALSE;
+  int    error = FFALSE;
   int    nrows = lp->rows+1, ncols = colorder[0];
   int    i, j, kk, n;
   int    *col_end, *row_map = NULL;
@@ -166,7 +166,7 @@ int __WINAPI getMDO(lprec *lp, MYBOOL *usedpos, int *colorder, int *size, MYBOOL
 
  /* Tally the non-zero counts of the unused columns/rows of the 
     basis matrix and store corresponding "net" starting positions */
-  allocINT(lp, &col_end, ncols+1, FALSE);
+  allocINT(lp, &col_end, ncols+1, FFALSE);
   n = prepareMDO(lp, usedpos, colorder, col_end, NULL);
   Bnz = col_end[ncols];
 
@@ -175,7 +175,7 @@ int __WINAPI getMDO(lprec *lp, MYBOOL *usedpos, int *colorder, int *size, MYBOOL
     goto Transfer;
 
  /* Get net number of rows and fill mapper */
-  allocINT(lp, &row_map, nrows, FALSE);
+  allocINT(lp, &row_map, nrows, FFALSE);
   nrows = 0;
   for(i = 0; i <= lp->rows; i++) {
     row_map[i] = i-nrows;
@@ -187,7 +187,7 @@ int __WINAPI getMDO(lprec *lp, MYBOOL *usedpos, int *colorder, int *size, MYBOOL
 
  /* Store row indeces of non-zero values in the basic columns */
   Blen = colamd_recommended(Bnz, nrows, ncols);
-  allocINT(lp, &Brows, Blen, FALSE);
+  allocINT(lp, &Brows, Blen, FFALSE);
   prepareMDO(lp, usedpos, colorder, Brows, row_map);
 #ifdef Paranoia
   verifyMDO(lp, col_end, Brows, nrows, ncols);

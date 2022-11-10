@@ -92,15 +92,15 @@ MYBOOL LUSOL_realloc_a(LUSOLrec *LUSOL, int newsize)
                                                     newsize, oldsize);
   if((newsize == 0) ||
      ((LUSOL->a != NULL) && (LUSOL->indc != NULL) && (LUSOL->indr != NULL)))
-    return( TRUE );
+    return( FTRUE );
   else
-    return( FALSE );
+    return( FFALSE );
 }
 
 MYBOOL LUSOL_expand_a(LUSOLrec *LUSOL, int *delta_lena, int *right_shift)
 {
 #ifdef StaticMemAlloc
-  return( FALSE );
+  return( FFALSE );
 #else
   int LENA, NFREE, LFREE;
 
@@ -111,7 +111,7 @@ MYBOOL LUSOL_expand_a(LUSOLrec *LUSOL, int *delta_lena, int *right_shift)
 
   /* Expand it! */
   if((*delta_lena <= 0) || !LUSOL_realloc_a(LUSOL, LENA+(*delta_lena)))
-    return( FALSE );
+    return( FFALSE );
 
   /* Make sure we return the actual memory increase of a */
   *delta_lena = LUSOL->lena-LENA;
@@ -128,7 +128,7 @@ MYBOOL LUSOL_expand_a(LUSOLrec *LUSOL, int *delta_lena, int *right_shift)
   *right_shift  = NFREE;
 
   LUSOL->expanded_a++;
-  return( TRUE );
+  return( FTRUE );
 #endif
 }
 
@@ -170,13 +170,13 @@ MYBOOL LUSOL_realloc_r(LUSOLrec *LUSOL, int newsize)
       LUSOL->amaxr = (REAL *) clean_realloc(LUSOL->amaxr, sizeof(*(LUSOL->amaxr)),
                                                           newsize, oldsize);
       if((newsize > 0) && (LUSOL->amaxr == NULL))
-        return( FALSE );
+        return( FFALSE );
     }
 #endif
-    return( TRUE );
+    return( FTRUE );
   }
   else
-    return( FALSE );
+    return( FFALSE );
 }
 
 MYBOOL LUSOL_realloc_c(LUSOLrec *LUSOL, int newsize)
@@ -227,22 +227,22 @@ MYBOOL LUSOL_realloc_c(LUSOLrec *LUSOL, int newsize)
                                                       newsize, oldsize);
       if((newsize > 0) &&
          ((LUSOL->Ha == NULL) || (LUSOL->Hj == NULL) || (LUSOL->Hk == NULL)))
-        return( FALSE );
+        return( FFALSE );
     }
 #endif
 #ifndef ClassicdiagU
-    if(LUSOL->luparm[LUSOL_IP_KEEPLU] == FALSE) {
+    if(LUSOL->luparm[LUSOL_IP_KEEPLU] == FFALSE) {
       LUSOL->diagU = (REAL *) clean_realloc(LUSOL->diagU, sizeof(*(LUSOL->diagU)),
                                                           newsize, oldsize);
       if((newsize > 0) && (LUSOL->diagU == NULL))
-        return( FALSE );
+        return( FFALSE );
     }
 #endif
 
-    return( TRUE );
+    return( FTRUE );
   }
   else
-    return( FALSE );
+    return( FFALSE );
 }
 
 LUSOLrec *LUSOL_create(FILE *outstream, int msgfil, int pivotmodel, int updatelimit)
@@ -277,7 +277,7 @@ LUSOLrec *LUSOL_create(FILE *outstream, int msgfil, int pivotmodel, int updateli
 #ifdef ForceRowBasedL0
   newLU->luparm[LUSOL_IP_ACCELERATION]     = LUSOL_BASEORDER;
 #endif
-  newLU->luparm[LUSOL_IP_KEEPLU]           = TRUE;
+  newLU->luparm[LUSOL_IP_KEEPLU]           = FTRUE;
   newLU->luparm[LUSOL_IP_UPDATELIMIT]      = updatelimit;
 
   init_BLAS();
@@ -292,9 +292,9 @@ MYBOOL LUSOL_sizeto(LUSOLrec *LUSOL, int init_r, int init_c, int init_a)
   if(LUSOL_realloc_a(LUSOL, init_a) &&
      LUSOL_realloc_r(LUSOL, init_r) &&
      LUSOL_realloc_c(LUSOL, init_c))
-    return( TRUE );
+    return( FTRUE );
   else
-    return( FALSE );
+    return( FFALSE );
 }
 
 char *LUSOL_pivotLabel(LUSOLrec *LUSOL)
@@ -365,7 +365,7 @@ MYBOOL LUSOL_tightenpivot(LUSOLrec *LUSOL)
   if(MIN(LUSOL->parmlu[LUSOL_RP_FACTORMAX_Lij],
          LUSOL->parmlu[LUSOL_RP_UPDATEMAX_Lij]) < 1.1) {
     if(LUSOL->luparm[LUSOL_IP_PIVOTTYPE] >= LUSOL_PIVMOD_TRP)
-      return( FALSE );
+      return( FFALSE );
     LUSOL_setpivotmodel(LUSOL, LUSOL->luparm[LUSOL_IP_PIVOTTYPE]+1, LUSOL_PIVTOL_DEFAULT+1);
     return( 2 );
   }
@@ -383,7 +383,7 @@ MYBOOL LUSOL_tightenpivot(LUSOLrec *LUSOL)
   LUSOL->parmlu[LUSOL_RP_FACTORMAX_Lij] = 1.0 + LUSOL->parmlu[LUSOL_RP_FACTORMAX_Lij]/3.0;
   LUSOL->parmlu[LUSOL_RP_UPDATEMAX_Lij] = 1.0 + LUSOL->parmlu[LUSOL_RP_UPDATEMAX_Lij]/3.0;
 #endif
-  return( TRUE );
+  return( FTRUE );
 }
 
 MYBOOL LUSOL_addSingularity(LUSOLrec *LUSOL, int singcol, int *inform)
@@ -400,7 +400,7 @@ MYBOOL LUSOL_addSingularity(LUSOLrec *LUSOL, int singcol, int *inform)
     if(LUSOL->isingular == NULL) {
       LUSOL->luparm[LUSOL_IP_SINGULARLISTSIZE] = 0;
       *inform = LUSOL_INFORM_NOMEMLEFT;
-      return( FALSE );
+      return( FFALSE );
     }
     LUSOL->luparm[LUSOL_IP_SINGULARLISTSIZE] = ASING;
 
@@ -420,7 +420,7 @@ MYBOOL LUSOL_addSingularity(LUSOLrec *LUSOL, int singcol, int *inform)
   /* Mimic old logic by keeping the last singularity stored */
   LUSOL->luparm[LUSOL_IP_SINGULARINDEX] = singcol;
 
-  return( TRUE );
+  return( FTRUE );
 }
 
 int LUSOL_getSingularity(LUSOLrec *LUSOL, int singitem)
@@ -521,7 +521,7 @@ void LUSOL_clear(LUSOLrec *LUSOL, MYBOOL nzonly)
       MEMCLEAR(LUSOL->Hk,  len);
     }
 #ifndef ClassicdiagU
-    if(LUSOL->luparm[LUSOL_IP_KEEPLU] == FALSE) {
+    if(LUSOL->luparm[LUSOL_IP_KEEPLU] == FFALSE) {
       MEMCLEAR(LUSOL->diagU, len);
     }
 #endif
@@ -536,7 +536,7 @@ MYBOOL LUSOL_assign(LUSOLrec *LUSOL, int iA[], int jA[], REAL Aij[], int nzcount
   /* Adjust the size of the a structure */
   if(nzcount > (LUSOL->lena/LUSOL->luparm[LUSOL_IP_SCALAR_NZA]) &&
      !LUSOL_realloc_a(LUSOL, nzcount*LUSOL->luparm[LUSOL_IP_SCALAR_NZA]))
-    return( FALSE );
+    return( FFALSE );
 
   m = 0;
   n = 0;
@@ -548,7 +548,7 @@ MYBOOL LUSOL_assign(LUSOLrec *LUSOL, int iA[], int jA[], REAL Aij[], int nzcount
       m = ij;
       if(m > LUSOL->maxm &&
          !LUSOL_realloc_r(LUSOL, -(m / LUSOL_MINDELTA_FACTOR + 1)))
-        return( FALSE );
+        return( FFALSE );
     }
     LUSOL->indc[k] = ij;
 
@@ -565,7 +565,7 @@ MYBOOL LUSOL_assign(LUSOLrec *LUSOL, int iA[], int jA[], REAL Aij[], int nzcount
       n = ij;
       if(n > LUSOL->maxn &&
          !LUSOL_realloc_c(LUSOL, -(n / LUSOL_MINDELTA_FACTOR + 1)))
-        return( FALSE );
+        return( FFALSE );
     }
     LUSOL->indr[k] = ij;
 
@@ -575,7 +575,7 @@ MYBOOL LUSOL_assign(LUSOLrec *LUSOL, int iA[], int jA[], REAL Aij[], int nzcount
   LUSOL->m = m;
   LUSOL->n = n;
   LUSOL->nelem = nzcount;
-  return( TRUE );
+  return( FTRUE );
 }
 
 int LUSOL_loadColumn(LUSOLrec *LUSOL, int iA[], int jA, REAL Aij[], int nzcount, int offset1)

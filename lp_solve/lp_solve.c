@@ -300,7 +300,7 @@ void write_model(lprec *lp, char plp, char *wlp, char *wmps, char *wfmps, char *
       fprintf(stderr, "Unable to set XLI library (%s).\n", wxliname);
       EndOfPgr(FORCED_EXIT);
     }
-    write_XLI(lp, wxli, wxlioptions, FALSE);
+    write_XLI(lp, wxli, wxlioptions, FFALSE);
     set_XLI(lp, NULL);
   }
 
@@ -309,7 +309,7 @@ void write_model(lprec *lp, char plp, char *wlp, char *wmps, char *wfmps, char *
       fprintf(stderr, "Unable to set XLI library (%s).\n", wxliname);
       EndOfPgr(FORCED_EXIT);
     }
-    write_XLI(lp, wxlisol, wxlioptions, TRUE);
+    write_XLI(lp, wxlisol, wxlioptions, FTRUE);
     set_XLI(lp, NULL);
   }
 }
@@ -527,30 +527,30 @@ static void print_statistics(lprec *lp)
 int main(int argc, char *argv[])
 {
   lprec *lp = NULL;
-  char *filen, *wlp = NULL, *wmps = NULL, *wfmps = NULL, plp = FALSE;
+  char *filen, *wlp = NULL, *wmps = NULL, *wfmps = NULL, plp = FFALSE;
   int i;
   int verbose = IMPORTANT /* CRITICAL */;
   int debug = -1;
-  MYBOOL report = FALSE;
-  MYBOOL nonames = FALSE, norownames = FALSE, nocolnames = FALSE;
-  MYBOOL write_model_after = FALSE;
-  MYBOOL noint = FALSE;
+  MYBOOL report = FFALSE;
+  MYBOOL nonames = FFALSE, norownames = FFALSE, nocolnames = FFALSE;
+  MYBOOL write_model_after = FFALSE;
+  MYBOOL noint = FFALSE;
   int print_sol = -1;
-  MYBOOL print_stats = FALSE;
+  MYBOOL print_stats = FFALSE;
   int floor_first = -1;
-  MYBOOL do_set_bb_depthlimit = FALSE;
+  MYBOOL do_set_bb_depthlimit = FFALSE;
   int bb_depthlimit = 0;
-  MYBOOL do_set_solutionlimit = FALSE;
+  MYBOOL do_set_solutionlimit = FFALSE;
   int solutionlimit = 0;
-  MYBOOL break_at_first = FALSE;
+  MYBOOL break_at_first = FFALSE;
   int scaling = 0;
   double scaleloop = 0;
-  MYBOOL tracing = FALSE;
+  MYBOOL tracing = FFALSE;
   short filetype = filetypeLP;
   int anti_degen1 = -1;
   int anti_degen2 = -1;
-  short print_timing = FALSE;
-  short parse_only = FALSE;
+  short print_timing = FFALSE;
+  short parse_only = FFALSE;
   int do_presolve = -1;
   short objective = 0;
   short PRINT_SOLUTION = 2;
@@ -564,12 +564,12 @@ int main(int argc, char *argv[])
   int scalemode2 = -1;
   int crashmode = -1;
   char *guessbasis = NULL;
-  /* short timeoutok = FALSE; */
+  /* short timeoutok = FFALSE; */
   long sectimeout = -1;
   int result;
   MYBOOL preferdual = AUTOMATIC;
   int simplextype = -1;
-  MYBOOL do_set_obj_bound = FALSE;
+  MYBOOL do_set_obj_bound = FFALSE;
   REAL obj_bound = 0;
   REAL mip_absgap = -1;
   REAL mip_relgap = -1;
@@ -579,7 +579,7 @@ int main(int argc, char *argv[])
   REAL epsd = -1;
   REAL epsb = -1;
   REAL epsel = -1;
-  MYBOOL do_set_break_at_value = FALSE;
+  MYBOOL do_set_break_at_value = FFALSE;
   REAL break_at_value = 0;
   FILE *fpin = stdin;
   char *bfp = NULL;
@@ -592,9 +592,9 @@ int main(int argc, char *argv[])
   char *wparname = NULL;
   char *wparoptions = NULL;
   char obj_in_basis = -1;
-  char mps_ibm = FALSE;
-  char mps_negobjconst = FALSE;
-  char mps_free = FALSE;
+  char mps_ibm = FFALSE;
+  char mps_negobjconst = FFALSE;
+  char mps_free = FFALSE;
   MYBOOL ok;
 # define SCALINGTHRESHOLD 0.03
 
@@ -605,7 +605,7 @@ int main(int argc, char *argv[])
 # endif
 
   for(i = 1; i < argc; i++) {
-    ok = FALSE;
+    ok = FFALSE;
     if(strncmp(argv[i], "-v", 2) == 0) {
       if (argv[i][2])
         verbose = atoi(argv[i] + 2);
@@ -613,21 +613,21 @@ int main(int argc, char *argv[])
         verbose = NORMAL;
     }
     else if(strcmp(argv[i], "-d") == 0)
-      debug = TRUE;
+      debug = FTRUE;
     else if(strcmp(argv[i], "-R") == 0)
-      report = TRUE;
+      report = FTRUE;
     else if(strcmp(argv[i], "-i") == 0)
-      print_sol = TRUE;
+      print_sol = FTRUE;
     else if(strcmp(argv[i], "-ia") == 0)
       print_sol = AUTOMATIC;
     else if(strcmp(argv[i], "-stat") == 0)
-      print_stats = TRUE;
+      print_stats = FTRUE;
     else if(strcmp(argv[i], "-nonames") == 0)
-      nonames = TRUE;
+      nonames = FTRUE;
     else if(strcmp(argv[i], "-norownames") == 0)
-      norownames = TRUE;
+      norownames = FTRUE;
     else if(strcmp(argv[i], "-nocolnames") == 0)
-      nocolnames = TRUE;
+      nocolnames = FTRUE;
     else if((strcmp(argv[i], "-c") == 0) || (strcmp(argv[i], "-cc") == 0))
       floor_first = BRANCH_CEILING;
     else if(strcmp(argv[i], "-cf") == 0)
@@ -635,7 +635,7 @@ int main(int argc, char *argv[])
     else if(strcmp(argv[i], "-ca") == 0)
       floor_first = BRANCH_AUTOMATIC;
     else if((strcmp(argv[i], "-depth") == 0) && (i + 1 < argc)) {
-      do_set_bb_depthlimit = TRUE;
+      do_set_bb_depthlimit = FTRUE;
       bb_depthlimit = atoi(argv[++i]);
     }
     else if(strcmp(argv[i], "-Bw") == 0)
@@ -673,12 +673,12 @@ int main(int argc, char *argv[])
         set_value(&bb_rule1, NODE_FIRSTSELECT);
     }
     else if((strcmp(argv[i], "-n") == 0) && (i + 1 < argc)) {
-      do_set_solutionlimit = TRUE;
+      do_set_solutionlimit = FTRUE;
       solutionlimit = atoi(argv[++i]);
     }
     else if((strcmp(argv[i], "-b") == 0) && (i + 1 < argc)) {
       obj_bound = atof(argv[++i]);
-      do_set_obj_bound = TRUE;
+      do_set_obj_bound = FTRUE;
     }
     else if(((strcmp(argv[i], "-g") == 0) || (strcmp(argv[i], "-ga") == 0)) && (i + 1 < argc))
       mip_absgap = atof(argv[++i]);
@@ -696,20 +696,20 @@ int main(int argc, char *argv[])
       max_num_inv = atoi(argv[++i]);
     else if((strcmp(argv[i], "-o") == 0) && (i + 1 < argc)) {
       break_at_value = atof(argv[++i]);
-      do_set_break_at_value = TRUE;
+      do_set_break_at_value = FTRUE;
     }
     else if(strcmp(argv[i], "-f") == 0)
-      break_at_first = TRUE;
+      break_at_first = FTRUE;
     else if(strcmp(argv[i], "-timeoutok") == 0)
-      /* timeoutok = TRUE */; /* option no longer needed, but still accepted */
+      /* timeoutok = FTRUE */; /* option no longer needed, but still accepted */
     else if(strcmp(argv[i], "-h") == 0) {
       print_help(argv);
       EndOfPgr(EXIT_SUCCESS);
     }
     else if(strcmp(argv[i], "-prim") == 0)
-      preferdual = FALSE;
+      preferdual = FFALSE;
     else if(strcmp(argv[i], "-dual") == 0)
-      preferdual = TRUE;
+      preferdual = FTRUE;
     else if(strcmp(argv[i], "-simplexpp") == 0)
       simplextype = SIMPLEX_PRIMAL_PRIMAL;
     else if(strcmp(argv[i], "-simplexdp") == 0)
@@ -765,7 +765,7 @@ int main(int argc, char *argv[])
     else if((strcmp(argv[i],"-gbas") == 0) && (i + 1 < argc))
       guessbasis = argv[++i];
     else if(strcmp(argv[i], "-t") == 0)
-      tracing = TRUE;
+      tracing = FTRUE;
     else if(strncmp(argv[i], "-S", 2) == 0) {
       if (argv[i][2])
         PRINT_SOLUTION = (short) atoi(argv[i] + 2);
@@ -799,7 +799,7 @@ int main(int argc, char *argv[])
     else if(strcmp(argv[i], "-pivh") == 0)
       or_value(&pivoting2, PRICE_HARRISTWOPASS);
     else if(strcmp(argv[i], "-pivt") == 0)
-      or_value(&pivoting2, PRICE_TRUENORMINIT);
+      or_value(&pivoting2, PRICE_FTRUENORMINIT);
     else if(strncmp(argv[i], "-piv", 4) == 0) {
       if (argv[i][4])
         set_value(&pivoting1, atoi(argv[i] + 4));
@@ -813,15 +813,15 @@ int main(int argc, char *argv[])
     else if((strcmp(argv[i],"-wlp") == 0) && (i + 1 < argc))
       wlp = argv[++i];
     else if(strcmp(argv[i],"-plp") == 0)
-      plp = TRUE;
+      plp = FTRUE;
     else if(strcmp(argv[i],"-mps") == 0)
       filetype = filetypeMPS;
     else if(strcmp(argv[i],"-mps_ibm") == 0)
-      mps_ibm = TRUE;
+      mps_ibm = FTRUE;
     else if(strcmp(argv[i],"-mps_negobjconst") == 0)
-      mps_negobjconst = TRUE;
+      mps_negobjconst = FTRUE;
     else if(strcmp(argv[i],"-mps_free") == 0)
-      mps_free = TRUE;
+      mps_free = FTRUE;
     else if(strcmp(argv[i],"-fmps") == 0)
       filetype = filetypeFREEMPS;
     else if((strcmp(argv[i],"-wmps") == 0) && (i + 1 < argc))
@@ -829,7 +829,7 @@ int main(int argc, char *argv[])
     else if((strcmp(argv[i],"-wfmps") == 0) && (i + 1 < argc))
       wfmps = argv[++i];
     else if(strcmp(argv[i],"-wafter") == 0)
-      write_model_after = TRUE;
+      write_model_after = FTRUE;
     else if(strcmp(argv[i],"-degen") == 0)
       set_value(&anti_degen1, ANTIDEGEN_DEFAULT);
     else if(strcmp(argv[i],"-degenf") == 0)
@@ -856,7 +856,7 @@ int main(int argc, char *argv[])
       if(clock() == -1)
         fprintf(stderr, "CPU times not available on this machine\n");
       else
-        print_timing = TRUE;
+        print_timing = FTRUE;
     }
     else if((strcmp(argv[i],"-bfp") == 0) && (i + 1 < argc))
       bfp = argv[++i];
@@ -903,9 +903,9 @@ int main(int argc, char *argv[])
     else if((strcmp(argv[i],"-epsel") == 0) && (i + 1 < argc))
       epsel = atof(argv[++i]);
     else if(strcmp(argv[i],"-parse_only") == 0)
-      parse_only = TRUE;
+      parse_only = FTRUE;
     else
-      ok = TRUE;
+      ok = FTRUE;
 
     if(!ok)
       ;
@@ -952,7 +952,7 @@ int main(int argc, char *argv[])
     else if(strcmp(argv[i],"-max") == 0)
       objective =  1;
     else if(strcmp(argv[i],"-noint") == 0)
-      noint =  TRUE;
+      noint =  FTRUE;
     else if((strcmp(argv[i],"-rpar") == 0) && (i + 1 < argc))
       i++;
     else if((strcmp(argv[i],"-rparopt") == 0) && (i + 1 < argc))
@@ -962,9 +962,9 @@ int main(int argc, char *argv[])
     else if((strcmp(argv[i],"-wparopt") == 0) && (i + 1 < argc))
       i++;
     else if(strcmp(argv[i],"-o0") == 0)
-      obj_in_basis = FALSE;
+      obj_in_basis = FFALSE;
     else if(strcmp(argv[i],"-o1") == 0)
-      obj_in_basis = TRUE;
+      obj_in_basis = FTRUE;
     else if(fpin == stdin) {
       filen = argv[i];
       if(*filen == '<')
@@ -1050,9 +1050,9 @@ int main(int argc, char *argv[])
     }
 
   if((nonames) || (nocolnames))
-    set_use_names(lp, FALSE, FALSE);
+    set_use_names(lp, FFALSE, FFALSE);
   if((nonames) || (norownames))
-    set_use_names(lp, TRUE, FALSE);
+    set_use_names(lp, FTRUE, FFALSE);
 
   if(objective != 0) {
     if(objective == 1)
@@ -1071,8 +1071,8 @@ int main(int argc, char *argv[])
         delete_lp(lp);
         EndOfPgr(FORCED_EXIT);
       }
-      set_semicont(lp, i, FALSE);
-      set_int(lp, i, FALSE);
+      set_semicont(lp, i, FFALSE);
+      set_int(lp, i, FFALSE);
     }
   }
 
@@ -1131,9 +1131,9 @@ int main(int argc, char *argv[])
   if(break_at_first)
     set_break_at_first(lp, break_at_first);
   if(mip_absgap >= 0)
-    set_mip_gap(lp, TRUE, mip_absgap);
+    set_mip_gap(lp, FTRUE, mip_absgap);
   if(mip_relgap >= 0)
-    set_mip_gap(lp, FALSE, mip_relgap);
+    set_mip_gap(lp, FFALSE, mip_relgap);
   if((anti_degen1 != -1) || (anti_degen2 != -1)) {
     if((anti_degen1 == -1) || (anti_degen2 != -1))
       anti_degen1 = 0;
@@ -1215,7 +1215,7 @@ int main(int argc, char *argv[])
             while ((ptr > buf) && (isspace(ptr[-1])))
               ptr--;
             *ptr = 0;
-            col = get_nameindex(lp, buf, FALSE);
+            col = get_nameindex(lp, buf, FFALSE);
             if (col < 1)
               printf("guess_basis: Unknown variable name %s\n", buf);
             else
@@ -1223,7 +1223,7 @@ int main(int argc, char *argv[])
           }
         }
         if (guess_basis(lp, guessvector, basisvector)) {
-          if (!set_basis(lp, basisvector, TRUE))
+          if (!set_basis(lp, basisvector, FTRUE))
             printf("Unable to set guessed basis.\n");
         }
         else
@@ -1257,7 +1257,7 @@ int main(int argc, char *argv[])
   if(write_model_after)
     write_model(lp, plp, wlp, wmps, wfmps, wxli, NULL, wxliname, wxlioptions);
 
-  write_model(lp, FALSE, NULL, NULL, NULL, NULL, wxlisol, wxliname, wxlisoloptions);
+  write_model(lp, FFALSE, NULL, NULL, NULL, NULL, wxlisol, wxliname, wxlisoloptions);
 
   if(PRINT_SOLUTION >= 6)
     print_scales(lp);

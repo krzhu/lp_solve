@@ -41,7 +41,7 @@ void LU7ADD(LUSOLrec *LUSOL, int JADD, REAL V[], int LENL, int *LENU,
     MINFRE = LENI+1;
     NFREE = LUSOL->lena - LENL - *LROW;
     if(NFREE<MINFRE) {
-      LU1REC(LUSOL, LUSOL->m, TRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
+      LU1REC(LUSOL, LUSOL->m, FTRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
       NFREE = LUSOL->lena - LENL - *LROW;
       if(NFREE<MINFRE)
         goto x970;
@@ -164,7 +164,7 @@ void LU7ELM(LUSOLrec *LUSOL, int JELM, REAL V[], int *LENL,
   NFREE = LUSOL->lena-(*LENL)-(*LROW);
   if(NFREE>=MINFRE)
     goto x100;
-  LU1REC(LUSOL, LUSOL->m,TRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
+  LU1REC(LUSOL, LUSOL->m,FTRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
   NFREE = LUSOL->lena-(*LENL)-(*LROW);
   if(NFREE<MINFRE)
     goto x970;
@@ -275,7 +275,7 @@ void LU7FOR(LUSOLrec *LUSOL, int KFIRST, int KLAST, int *LENL, int *LENU,
   SMALL  = LUSOL->parmlu[LUSOL_RP_ZEROTOLERANCE];
   USPACE = LUSOL->parmlu[LUSOL_RP_COMPSPACE_U];
   KBEGIN = KFIRST;
-  SWAPPD = FALSE;
+  SWAPPD = FFALSE;
 
 /*      We come back here from below if a row interchange is performed. */
 x100:
@@ -293,7 +293,7 @@ x100:
   MINFRE = LUSOL->n+1;
   NFREE = LUSOL->lena-(*LENL)-(*LROW);
   if(NFREE<MINFRE) {
-    LU1REC(LUSOL, LUSOL->m,TRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
+    LU1REC(LUSOL, LUSOL->m,FTRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
     LW1 = LUSOL->locr[IW];
     LW2 = (LW1+LENW)-1;
     NFREE = LUSOL->lena-(*LENL)-(*LROW);
@@ -350,7 +350,7 @@ x150:
     LUSOL->ip[KLAST] = IV;
     LUSOL->ip[K] = IW;
     KBEGIN = K;
-    SWAPPD = TRUE;
+    SWAPPD = FTRUE;
     goto x600;
 /*         ---------------------------------------------------------------
            Delete the eliminated element from row  iw
@@ -497,7 +497,7 @@ x400:
 /*         The  k-th  element of row  iw  has been processed.
            Reset  swappd  before looking at the next element. */
 x490:
-    SWAPPD = FALSE;
+    SWAPPD = FFALSE;
   }
 /*      ==================================================================
         End of main elimination loop.
@@ -545,7 +545,7 @@ x910:
 x950:
   LIMIT = (int) (USPACE*(*LENU))+LUSOL->m+LUSOL->n+1000;
   if(*LROW>LIMIT)
-    LU1REC(LUSOL, LUSOL->m,TRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
+    LU1REC(LUSOL, LUSOL->m,FTRUE,LROW,LUSOL->indr,LUSOL->lenr,LUSOL->locr);
   goto x990;
 /*      Not enough storage. */
 x970:
