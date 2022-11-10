@@ -77,16 +77,16 @@
 #endif
 
 #ifndef my_boolstr
-  #define my_boolstr(x)          (!(x) ? "FALSE" : "TRUE")
+  #define my_boolstr(x)          (!(x) ? "FFALSE" : "FTRUE")
 #endif
 
 #ifndef NULL
   #define NULL 	       0
 #endif
 
-#ifndef FALSE
-  #define FALSE        0
-  #define TRUE         1
+#ifndef FFALSE
+  #define FFALSE        0
+  #define FTRUE         1
 #endif
 
 #ifndef DEF_STRBUFSIZE

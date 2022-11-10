@@ -149,8 +149,8 @@ typedef struct _MATrec
   REAL      epsvalue;           /* Zero element rejection threshold */
   REAL      infnorm;            /* The largest absolute value in the matrix */
   REAL      dynrange;
-  MYBOOL    row_end_valid;      /* TRUE if row_end & row_mat are valid */
-  MYBOOL    is_roworder;        /* TRUE if the current (temporary) matrix order is row-wise */
+  MYBOOL    row_end_valid;      /* FTRUE if row_end & row_mat are valid */
+  MYBOOL    is_roworder;        /* FTRUE if the current (temporary) matrix order is row-wise */
 
 } MATrec;
 

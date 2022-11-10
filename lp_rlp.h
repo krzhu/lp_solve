@@ -1076,9 +1076,9 @@ YY_RULE_SETUP
     if(lp_yytext[x] == '-' || lp_yytext[x] == '+')
       pv->Sign = (pv->Sign == (lp_yytext[x] == '+'));
   return (TOK_SIGN);
-  /* Sign is TRUE if the sign-string
+  /* Sign is FTRUE if the sign-string
      represents a '-'. Otherwise Sign
-     is FALSE */
+     is FFALSE */
 }
 	YY_BREAK
 case 18:
@@ -1090,7 +1090,7 @@ YY_RULE_SETUP
   pp->lineno = lp_yylineno;
   if((!pv->Within_int_decl) && (!pv->Within_sec_decl) && (!pv->Within_sos_decl) && (!pv->Within_free_decl)) {
     pv->Within_int_decl = 1;
-    pv->Within_sos_decl1 = FALSE;
+    pv->Within_sos_decl1 = FFALSE;
   }
   return(SEC_INT);
 }
@@ -1104,7 +1104,7 @@ YY_RULE_SETUP
   pp->lineno = lp_yylineno;
   if((!pv->Within_int_decl) && (!pv->Within_sec_decl) && (!pv->Within_sos_decl) && (!pv->Within_free_decl)) {
     pv->Within_int_decl = 2;
-    pv->Within_sos_decl1 = FALSE;
+    pv->Within_sos_decl1 = FFALSE;
   }
   return(SEC_BIN);
 }
@@ -1117,8 +1117,8 @@ YY_RULE_SETUP
 
   pp->lineno = lp_yylineno;
   if((!pv->Within_int_decl) && (!pv->Within_sec_decl) && (!pv->Within_sos_decl) && (!pv->Within_free_decl)) {
-    pv->Within_sec_decl = TRUE;
-    pv->Within_sos_decl1 = FALSE;
+    pv->Within_sec_decl = FTRUE;
+    pv->Within_sos_decl1 = FFALSE;
   }
   return(SEC_SEC);
 }
@@ -1133,7 +1133,7 @@ YY_RULE_SETUP
   if(!pv->Within_sos_decl)
     pv->SOStype0 = (short)atoi(((char *)lp_yytext) + 3);
   if((!pv->Within_int_decl) && (!pv->Within_sec_decl) && (!pv->Within_sos_decl) && (!pv->Within_free_decl))
-    pv->Within_sos_decl = TRUE;
+    pv->Within_sos_decl = FTRUE;
   return(SEC_SOS);
 }
 	YY_BREAK
@@ -1158,8 +1158,8 @@ YY_RULE_SETUP
 
   pp->lineno = lp_yylineno;
   if((!pv->Within_int_decl) && (!pv->Within_sec_decl) && (!pv->Within_sos_decl) && (!pv->Within_free_decl)) {
-    pv->Within_free_decl = TRUE;
-    pv->Within_sos_decl1 = FALSE;
+    pv->Within_free_decl = FTRUE;
+    pv->Within_sos_decl1 = FFALSE;
   }
   return(SEC_FREE);
 }
@@ -1251,7 +1251,7 @@ YY_RULE_SETUP
   parse_vars *pv = (parse_vars *) pp->parse_vars;
 
   pp->lineno = lp_yylineno;
-  pv->Within_int_decl = pv->Within_sec_decl = pv->Within_sos_decl = pv->Within_free_decl = FALSE;
+  pv->Within_int_decl = pv->Within_sec_decl = pv->Within_sos_decl = pv->Within_free_decl = FFALSE;
   check_int_sec_sos_free_decl(pp, (int) pv->Within_int_decl, (int) pv->Within_sec_decl, (int) pv->Within_sos_decl, (int) pv->Within_free_decl);
   return(END_C);
 }

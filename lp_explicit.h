@@ -505,7 +505,7 @@ static int init_lpsolve(lprec *lp)
   _write_basis = lp->write_basis;
   _write_params = lp->write_params;
 
-  return(TRUE);
+  return(FTRUE);
 }
 
 #elif defined LPSOLVEAPIFROMLIB
@@ -543,7 +543,7 @@ static int close_lpsolve_lib(hlpsolve lpsolve)
   dlclose(lpsolve);
 #endif
 
-  return(TRUE);
+  return(FTRUE);
 }
 
 static int init_lpsolve(hlpsolve lpsolve)
@@ -798,7 +798,7 @@ static int init_lpsolve(hlpsolve lpsolve)
   _write_basis = (write_basis_func *) AddressOf(lpsolve, "write_basis");
   _write_params = (write_params_func *) AddressOf(lpsolve, "write_params");
 
-  return(TRUE);
+  return(FTRUE);
 # undef AddressOf
 }
 

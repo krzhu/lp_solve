@@ -53,7 +53,7 @@
 
 #define WARN_ON_MALLOC_FAIL    /* A debug is issued on a failed malloc */
 #define WARN_ON_ZERO_MALLOC    /* A debug is issued on a malloc(0)     */
-#define WARN_ON_FALSE_FAIL     /* See Fortify_SetMallocFailRate        */
+#define WARN_ON_FFALSE_FAIL     /* See Fortify_SetMallocFailRate        */
 #define WARN_ON_SIZE_T_OVERFLOW/* Watch for breaking the 64K limit in  */
                                /* some braindead architectures...      */
 

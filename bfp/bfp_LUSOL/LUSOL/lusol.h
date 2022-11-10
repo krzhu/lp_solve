@@ -67,11 +67,11 @@
 #ifndef ONE
   #define ONE                        1
 #endif
-#ifndef FALSE
-  #define FALSE                      0
+#ifndef FFALSE
+  #define FFALSE                      0
 #endif
-#ifndef TRUE
-  #define TRUE                       1
+#ifndef FTRUE
+  #define FTRUE                       1
 #endif
 #ifndef NULL
   #define NULL                       0
@@ -293,7 +293,7 @@ typedef struct _LUSOLrec {
   /* List of singular columns, with dynamic size allocation */
   int    *isingular;
 
-  /* Extra arrays of length n for TCP and keepLU == FALSE */
+  /* Extra arrays of length n for TCP and keepLU == FFALSE */
   REAL   *Ha, *diagU;
   int    *Hj, *Hk;
 

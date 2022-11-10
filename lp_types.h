@@ -85,8 +85,8 @@
 #endif
 
 /* Byte-sized Booleans and extended options */
-#define FALSE                    0
-#define TRUE                     1
+#define FFALSE                    0
+#define FTRUE                     1
 #define AUTOMATIC                2
 #define DYNAMIC                  4
 
@@ -220,7 +220,7 @@
 #define my_reldiff(x, y)       (((x) - (y)) / (1.0 + fabs((REAL) (y))))
 #define my_boundstr(x)         (fabs(x) < lp->infinite ? sprintf("%g",x) : ((x) < 0 ? "-Inf" : "Inf") )
 #ifndef my_boolstr
-  #define my_boolstr(x)          (!(x) ? "FALSE" : "TRUE")
+  #define my_boolstr(x)          (!(x) ? "FFALSE" : "FTRUE")
 #endif
 #define my_basisstr(isbasic)     ((isbasic) ? "BASIC" : "NON-BASIC")
 #define my_simplexstr(isdual)    ((isdual) ? "DUAL" : "PRIMAL")

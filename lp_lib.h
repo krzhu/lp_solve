@@ -60,7 +60,7 @@
 #  define isnan _isnan
 # endif
 #if defined NOISNAN
-# define isnan(x) FALSE
+# define isnan(x) FFALSE
 #endif
 
 #define SETMASK(variable, mask)     variable |= mask
@@ -98,7 +98,7 @@
 /* ------------------------------------------------------------------------- */
 /*#define MIPboundWithOF */ /* Enable to detect OF constraint for use during B&B */
 /*#define SlackInitMinusInf */        /* Slacks have 0 LB if this is not defined */
-#define FULLYBOUNDEDSIMPLEX FALSE     /* WARNING: Activate at your own risk! */
+#define FULLYBOUNDEDSIMPLEX FFALSE     /* WARNING: Activate at your own risk! */
 
 
 /* Specify use of the basic linear algebra subroutine library                */
@@ -110,11 +110,11 @@
 /* Active inverse logic (default is optimized original etaPFI)               */
 /* ------------------------------------------------------------------------- */
 #if !defined LoadInverseLib
-# define LoadInverseLib TRUE          /* Enable alternate inverse libraries */
+# define LoadInverseLib FTRUE          /* Enable alternate inverse libraries */
 #endif
 /*#define ExcludeNativeInverse     */   /* Disable INVERSE_ACTIVE inverse engine */
 
-#define DEF_OBJINBASIS        TRUE  /* Additional rows inserted at the top (1 => OF) */
+#define DEF_OBJINBASIS        FTRUE  /* Additional rows inserted at the top (1 => OF) */
 
 #define INVERSE_NONE            -1
 #define INVERSE_LEGACY           0
@@ -135,7 +135,7 @@
 /* Active external language interface logic (default is none)                */
 /* ------------------------------------------------------------------------- */
 #if !defined LoadLanguageLib
-# define LoadLanguageLib TRUE         /* Enable alternate language libraries */
+# define LoadLanguageLib FTRUE         /* Enable alternate language libraries */
 #endif
 #define ExcludeNativeLanguage                 /* Disable LANGUAGE_ACTIVE XLI */
 
@@ -210,7 +210,7 @@
 #include "lp_types.h"
 #include "lp_utils.h"
 
-#if (LoadInverseLib == TRUE) || (LoadLanguageLib == TRUE)
+#if (LoadInverseLib == FTRUE) || (LoadLanguageLib == FTRUE)
   #ifdef WIN32
     #include <windows.h>
   #else
@@ -477,7 +477,7 @@
 #define PRICE_LOOPALTERNATE   2048    /* Scan entering/leaving columns alternatingly left/right */
 #define PRICE_HARRISTWOPASS   4096    /* Use Harris' primal pivot logic rather than the default */
 #define PRICE_FORCEFULL       8192    /* Non-user option to force full pricing */
-#define PRICE_TRUENORMINIT   16384    /* Use true norms for Devex and Steepest Edge initializations */
+#define PRICE_FTRUENORMINIT   16384    /* Use true norms for Devex and Steepest Edge initializations */
 
 /*#define _PRICE_NOBOUNDFLIP*/
 #if defined _PRICE_NOBOUNDFLIP
@@ -490,7 +490,7 @@
                                   PRICE_RANDOMIZE + PRICE_AUTOPARTIAL + PRICE_AUTOMULTIPLE + \
                                   PRICE_LOOPLEFT + PRICE_LOOPALTERNATE + \
                                   PRICE_HARRISTWOPASS + \
-                                  PRICE_FORCEFULL + PRICE_TRUENORMINIT)
+                                  PRICE_FORCEFULL + PRICE_FTRUENORMINIT)
 
 /* B&B active variable codes (internal) */
 #define BB_REAL                  0
@@ -617,7 +617,7 @@
 #define MAX_RULESWITCH           5  /* The maximum number of times to try an alternate pricing rule
                                        to recover from stalling; set negative for no limit. */
 #define DEF_TIMEDREFACT  AUTOMATIC  /* Default for timed refactorization in BFPs;
-                                       can be FALSE, TRUE or AUTOMATIC (dynamic) */
+                                       can be FFALSE, FTRUE or AUTOMATIC (dynamic) */
 
 #define DEF_SCALINGLIMIT         5  /* The default maximum number of scaling iterations */
 
@@ -1387,9 +1387,9 @@ struct _lprec
 
   MYBOOL    lag_trace;          /* Print information on Lagrange progression */
   MYBOOL    spx_trace;          /* Print information on simplex progression */
-  MYBOOL    bb_trace;           /* TRUE to print extra debug information */
-  MYBOOL    streamowned;        /* TRUE if the handle should be closed at delete_lp() */
-  MYBOOL    obj_in_basis;       /* TRUE if the objective function is in the basis matrix */
+  MYBOOL    bb_trace;           /* FTRUE to print extra debug information */
+  MYBOOL    streamowned;        /* FTRUE if the handle should be closed at delete_lp() */
+  MYBOOL    obj_in_basis;       /* FTRUE if the objective function is in the basis matrix */
 
   int       spx_status;         /* Simplex solver feasibility/mode code */
   int       lag_status;         /* Extra status variable for lag_solve */
@@ -1434,7 +1434,7 @@ struct _lprec
   int       simplex_strategy;   /* Set desired combination of primal and dual simplex algorithms */
   int       simplex_mode;       /* Specifies the current simplex mode during solve; see simplex_strategy */
   int       verbose;            /* Set amount of run-time messages and results */
-  int       print_sol;          /* TRUE to print optimal solution; AUTOMATIC skips zeros */
+  int       print_sol;          /* FTRUE to print optimal solution; AUTOMATIC skips zeros */
   FILE      *outstream;         /* Output stream, initialized to STDOUT */
 
   /* Main Branch and Bound settings */
@@ -1445,14 +1445,14 @@ struct _lprec
   int       bb_rule;            /* Rule for selecting B&B variables */
   MYBOOL    bb_floorfirst;      /* Set BRANCH_FLOOR for B&B to set variables to floor bound first;
                                    conversely with BRANCH_CEILING, the ceiling value is set first */
-  MYBOOL    bb_breakfirst;      /* TRUE to stop at first feasible solution */
+  MYBOOL    bb_breakfirst;      /* FTRUE to stop at first feasible solution */
   MYBOOL    _piv_left_;         /* Internal variable indicating active pricing loop order */
   MYBOOL    BOOLfuture1;
 
   REAL      scalelimit;         /* Relative convergence criterion for iterated scaling */
   int       scalemode;          /* OR-ed codes for data scaling */
   int       improve;            /* Set to non-zero for iterative improvement */
-  int       anti_degen;         /* Anti-degen strategy (or none) TRUE to avoid cycling */
+  int       anti_degen;         /* Anti-degen strategy (or none) FTRUE to avoid cycling */
   int       do_presolve;        /* PRESOLVE_ parameters for LP presolving */
   int       presolveloops;      /* Maximum number of presolve loops */
 
@@ -1469,7 +1469,7 @@ struct _lprec
   partialrec *colblocks;
 
   /* Row and column type codes */
-  MYBOOL    *var_type;          /* sum_alloc+1 : TRUE if variable must be integer */
+  MYBOOL    *var_type;          /* sum_alloc+1 : FTRUE if variable must be integer */
 
   /* Data for multiple pricing */
   multirec  *multivars;
@@ -1480,7 +1480,7 @@ struct _lprec
   int       int_vars;           /* Number of variables required to be integer */
 
   int       sc_vars;            /* Number of semi-continuous variables */
-  REAL      *sc_lobound;        /* sum_columns+1 : TRUE if variable is semi-continuous;
+  REAL      *sc_lobound;        /* sum_columns+1 : FTRUE if variable is semi-continuous;
                                    value replaced by conventional lower bound during solve */
   int       *var_is_free;       /* columns+1: Index of twin variable if variable is free */
   int       *var_priority;      /* columns: Priority-mapping of variables */
@@ -1527,18 +1527,18 @@ struct _lprec
   /* Scaling parameters */
   REAL      *scalars;           /* sum_alloc+1:0..Rows the scaling of the rows,
                                    Rows+1..Sum the scaling of the columns */
-  MYBOOL    scaling_used;       /* TRUE if scaling is used */
-  MYBOOL    columns_scaled;     /* TRUE if the columns are scaled too */
+  MYBOOL    scaling_used;       /* FTRUE if scaling is used */
+  MYBOOL    columns_scaled;     /* FTRUE if the columns are scaled too */
   MYBOOL    varmap_locked;      /* Determines whether the var_to_orig and orig_to_var are fixed */
 
   /* Variable state information */
-  MYBOOL    basis_valid;        /* TRUE is the basis is still valid */
+  MYBOOL    basis_valid;        /* FTRUE is the basis is still valid */
   int       crashmode;          /* Basis crashing mode (or none) */
   int       *var_basic;         /* rows_alloc+1: The list of columns in the basis */
   REAL      *val_nonbasic;      /* Array to store current values of non-basic variables */
-  MYBOOL    *is_basic;          /* sum_alloc+1: TRUE if the column is in the basis */
-  MYBOOL    *is_lower;          /*  "       " : TRUE if the variable is at its
-                                   lower bound (or in the basis), FALSE otherwise */
+  MYBOOL    *is_basic;          /* sum_alloc+1: FTRUE if the column is in the basis */
+  MYBOOL    *is_lower;          /*  "       " : FTRUE if the variable is at its
+                                   lower bound (or in the basis), FFALSE otherwise */
 
   /* Simplex basis indicators */
   int       *rejectpivot;       /* List of unacceptable pivot choices due to division-by-zero */
@@ -1626,7 +1626,7 @@ struct _lprec
   char      *ex_status;
 
   /* Refactorization engine interface routines (for dynamic DLL/SO BFPs) */
-#if LoadInverseLib == TRUE
+#if LoadInverseLib == FTRUE
   #ifdef WIN32
     HINSTANCE                   hBFP;
   #else
@@ -1669,7 +1669,7 @@ struct _lprec
   BFPint_lpintrealcbintint      *bfp_findredundant;
 
   /* External language interface routines (for dynamic DLL/SO XLIs) */
-#if LoadLanguageLib == TRUE
+#if LoadLanguageLib == FTRUE
   #ifdef WIN32
     HINSTANCE                   hXLI;
   #else
@@ -1906,7 +1906,7 @@ void __EXPORT_TYPE __WINAPI reset_basis(lprec *lp);
 MYBOOL __EXPORT_TYPE __WINAPI guess_basis(lprec *lp, REAL *guessvector, int *basisvector);
 
 MYBOOL __EXPORT_TYPE __WINAPI is_feasible(lprec *lp, REAL *values, REAL threshold);
-/* returns TRUE if the vector in values is a feasible solution to the lp */
+/* returns FTRUE if the vector in values is a feasible solution to the lp */
 
 int __EXPORT_TYPE __WINAPI solve(lprec *lp);
 /* Solve the problem */
